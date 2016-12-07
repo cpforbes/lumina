@@ -81,14 +81,16 @@ LSession::~LSession(){
 }
 
 void LSession::setupSession(){
+  //Seed random number generator (if needed)
+  qsrand( QTime::currentTime().msec() );
+
   BootSplash splash;
     splash.showScreen("init");
   qDebug() << "Initializing Session";
   if(QFile::exists("/tmp/.luminastopping")){ QFile::remove("/tmp/.luminastopping"); }
   QTime* timer = 0;
-  if(DEBUG){ timer = new QTime(); timer->start(); qDebug() << " - Init srand:" << timer->elapsed();}
-  //Seed random number generator (if needed)
-  qsrand( QTime::currentTime().msec() );
+  //if(DEBUG){ timer = new QTime(); timer->start(); qDebug() << " - Init srand:" << timer->elapsed();}
+
   //Setup the QSettings default paths
     splash.showScreen("settings");
   if(DEBUG){ qDebug() << " - Init QSettings:" << timer->elapsed();}
@@ -149,6 +151,7 @@ void LSession::setupSession(){
     watcherChange( confdir+"/desktopsettings.conf" );
     watcherChange( confdir+"/fluxbox-init" );
     watcherChange( confdir+"/fluxbox-keys" );
+    watcherChange( confdir+"/favorites.list" );
     //Try to watch the localized desktop folder too
     if(QFile::exists(QDir::homePath()+"/"+tr("Desktop"))){ watcherChange( QDir::homePath()+"/"+tr("Desktop") ); }
     watcherChange( QDir::homePath()+"/Desktop" );
@@ -161,7 +164,10 @@ void LSession::setupSession(){
   for(int i=0; i<4; i++){ LSession::processEvents(); } //Again, just a few event loops here so thing can settle before we close the splash screen
   //launchStartupApps();
   QTimer::singleShot(500, this, SLOT(launchStartupApps()) );
+  splash.hide();
+  LSession::processEvents();
   splash.close(); 
+  LSession::processEvents();
 }
 
 void LSession::CleanupSession(){
@@ -328,9 +334,13 @@ void LSession::watcherChange(QString changed){
     desktopFiles = QDir(changed).entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs ,QDir::Name | QDir::IgnoreCase | QDir::DirsFirst);
     if(DEBUG){ qDebug() << "New Desktop Files:" << desktopFiles.length(); }
     emit DesktopFilesChanged(); 
-  }
+  }else if(changed.endsWith("favorites.list")){ emit FavoritesChanged(); }
   //Now ensure this file was not removed from the watcher
   if(!watcher->files().contains(changed) && !watcher->directories().contains(changed)){
+    if(!QFile::exists(changed)){
+      //Create the file really quick to ensure it can be watched
+      //TODO
+    }
     watcher->addPath(changed);
   }
 }

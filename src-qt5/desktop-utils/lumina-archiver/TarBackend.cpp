@@ -126,11 +126,18 @@ void Backend::startRemove(QStringList paths){
 }
 
 void Backend::startExtract(QString path, bool overwrite, QString file){
+  startExtract(path, overwrite, QStringList() << file); //overload for multi-file function
+}
+
+void Backend::startExtract(QString path, bool overwrite, QStringList files){
   QStringList args;
-  args << "-x";
+  args << "-x" << "--no-same-owner";
   if(!overwrite){ args << "-k"; }
   args << flags;
-  if(!file.isEmpty()){ args << "--include" << file << "--strip-components" << QString::number(file.count("/")); }
+  for(int i=0; i<files.length(); i++){
+    if(files[i].simplified().isEmpty()){ continue; }
+    args << "--include" << files[i] << "--strip-components" << QString::number(files[i].count("/"));
+  }
   args << "-C" << path;
   STARTING=true;
   //qDebug() << "Starting command:" << "tar" << args;
@@ -208,12 +215,13 @@ void Backend::procFinished(int retcode, QProcess::ExitStatus){
     QStringList args = PROC.arguments();
     if(args.contains("-x") && retcode==0){
        needupdate=false;
-      if(args.contains("--include")){
-        //Need to find the full path to the extracted file
+      if(args.count("--include")==1){
+        //Need to find the full path to the (single) extracted file
         QString path = args.last() +"/"+ args[ args.indexOf("--include")+1].section("/",-1);
         QFile::setPermissions(path, QFileDevice::ReadOwner);
         QProcess::startDetached("xdg-open  \""+path+"\"");
       }else{
+        //Multi-file extract - open the dir instead
         QProcess::startDetached("xdg-open \""+ args.last()+"\""); //just extracted to a dir - open it now
       }
     }else if(args.contains("-c") && QFile::exists(tmpfilepath)){
