@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+//#include <libutil.h>
 
 class TTYProcess : public QObject{
 	Q_OBJECT
@@ -60,6 +61,8 @@ private:
 	int ttyfd;
 	QSocketNotifier *sn;
 	QByteArray fragBA; //fragment ByteArray
+	bool starting;
+	int fixReply; //flag for detecting particular inputs and "fixing" the reply to it as needed
 	
 	//====================================
 	// C Library function for setting up the PTY
@@ -70,8 +73,9 @@ private:
 	// Returns:
 	//    -1 for errors, child process PID (positive integer) if successful
 	//====================================
-	static pid_t LaunchProcess(int& fd, char *prog, char **child_args); 
-	
+	pid_t LaunchProcess(int& fd, char *prog, char **child_args); 
+	void setupTtyFd(pid_t fd);
+
 private slots:
 	void checkStatus(int);
 

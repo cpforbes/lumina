@@ -23,10 +23,12 @@ public:
 	TerminalWidget(QWidget *parent =0, QString dir="");
 	~TerminalWidget();
 
+	void setTerminalFont(QFont);
 	void aboutToClose();
 
 private:
 	TTYProcess *PROC;
+	QTimer *resizeTimer;
 	QTextCharFormat DEFFMT, CFMT; //default/current text format
 	QTextCursor selCursor, lastCursor;
 	QMenu *contextMenu;
@@ -52,6 +54,8 @@ private slots:
 
 	void copySelection();
 	void pasteSelection();
+
+	void updateTermSize();
 
 signals:
 	void ProcessClosed(QString);
