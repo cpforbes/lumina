@@ -1,20 +1,22 @@
 # Enable hardened build by default
 %global _hardened_build 1
 
+%{!?rel: %global rel 1}
+
 %if %{defined git_build}
 %global commit0 %{git_build}
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
 %define rpm_version 1.1.2
-%define rel 0.1.%{shortcommit0}
+%global relver %{rel}.%{shortcommit0}
 %else
 %define release_version 1.1.0-p1
 %define rpm_version %(echo %{release_version} | tr - .)
-%define rel 1
+%global relver %{rel}
 %endif
 Summary:            A lightweight, portable desktop environment
 Name:               lumina-desktop
 Version:            %{rpm_version}
-Release:            %{rel}%{?dist}
+Release:            %{relver}%{?dist}
 License:            BSD
 Group:              User Interface/Desktops
 URL:                http://lumina-desktop.org
@@ -176,7 +178,7 @@ This package provides lumina-archiver
 %endif
 
 %build
-%qmake_qt5 CONFIG+="configure WITH_I18N" PREFIX="%{_prefix}" LIBPREFIX="%{_libdir}" QT5LIBDIR="%{_qt5_prefix}" L_LIBDIR=%{_libdir}
+%qmake_qt5 QMAKE_CFLAGS_ISYSTEM= CONFIG+="configure" CONFIG+="WITH_I18N" PREFIX="%{_prefix}" LIBPREFIX="%{_libdir}" QT5LIBDIR="%{_qt5_prefix}" L_LIBDIR=%{_libdir}
 make %{?_smp_mflags}
 
 %install
