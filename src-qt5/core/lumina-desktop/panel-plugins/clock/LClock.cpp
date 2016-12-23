@@ -10,7 +10,7 @@
 #include <LuminaXDG.h>
 
 LClock::LClock(QWidget *parent, QString id, bool horizontal) : LPPlugin(parent, id, horizontal){
-  button = new QToolButton(this);
+  button = new QToolButton(this); //RotateToolButton(this);
     button->setAutoRaise(true);
     button->setToolButtonStyle(Qt::ToolButtonTextOnly);
     button->setStyleSheet("font-weight: bold;");
@@ -77,7 +77,15 @@ void LClock::updateTime(bool adjustformat){
   }
   if( this->layout()->direction() == QBoxLayout::TopToBottom ){
     //different routine for vertical text (need newlines instead of spaces)
-    label.replace(" ","\n");
+    for(int i=0; i<label.count("\n")+1; i++){
+      if(this->size().width() < (this->fontMetrics().width(label.section("\n",i,i))+10 )&& label.section("\n",i,i).contains(" ")){
+	label.replace(label.section("\n",i,i), label.section("\n",i,i).replace(" ", "\n"));
+        i--;
+      }
+    }
+    //label.replace(" ","\n");
+  }else if( this->size().height() < 2*this->fontMetrics().height() ){
+    label.replace("\n",", ");
   }
   if(adjustformat){
    //Check the font/spacing for the display and adjust as necessary
@@ -92,9 +100,15 @@ void LClock::updateTime(bool adjustformat){
     }else{
       button->setStyleSheet("font-weight: bold;");
     }*/
+    if(this->layout()->direction()==QBoxLayout::LeftToRight){
+      //horizontal layout
+     this->setFixedWidth( this->sizeHint().width() +6);
+    }else{
+      //vertical layout
+      this->setMaximumWidth(100000);
+    }
   }
   button->setText(label);
-
 }
 
 void LClock::updateFormats(){
@@ -113,7 +127,7 @@ void LClock::updateFormats(){
   //this->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
   updateTime(true);
   //Now fix the size of the widget with the new size hint
-  this->setFixedWidth( this->sizeHint().width() +6);
+  //this->setFixedWidth( this->sizeHint().width() +6);
 }
 
 void LClock::updateMenu(){
@@ -202,10 +216,12 @@ void LClock::ThemeChange(){
 }
 
 void LClock::OrientationChange(){
-  if(this->layout()->direction()==QBoxLayout::LeftToRight){
+  if(this->layout()->direction()==QBoxLayout::LeftToRight){ //horizontal panel
+    //button->setRotation(0); //no rotation of text
     this->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-  }else{
+  }else{  //vertical panel
+    //button->setRotation(90); //90 degree rotation
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
   }
