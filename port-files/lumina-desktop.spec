@@ -6,10 +6,10 @@
 %if %{defined git_build}
 %global commit0 %{git_build}
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
-%define rpm_version 1.1.2
+%define rpm_version 1.2.1
 %global relver %{rel}.%{shortcommit0}
 %else
-%define release_version 1.1.0-p1
+%define release_version 1.2.0
 %define rpm_version %(echo %{release_version} | tr - .)
 %global relver %{rel}
 %endif
