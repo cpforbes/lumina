@@ -7,6 +7,7 @@
 #include "DirWidget2.h"
 #include "ui_DirWidget2.h"
 
+#include <QActionGroup>
 #include <QMessageBox>
 #include <QCursor>
 #include <QClipboard>
@@ -44,9 +45,12 @@ DirWidget::DirWidget(QString objID, QWidget *parent) : QWidget(parent), ui(new U
   line_dir = new QLineEdit(this);
     toolbar->addWidget(line_dir);
     connect(line_dir, SIGNAL(returnPressed()), this, SLOT(dir_changed()) );
-  toolbar->addAction(ui->actionSingleColumn);
-  ui->actionSingleColumn->setChecked(true);
-  toolbar->addAction(ui->actionDualColumn);
+  QActionGroup *columnActionGroup = new QActionGroup(this);
+    toolbar->addAction(ui->actionSingleColumn);
+    ui->actionSingleColumn->setChecked(true);
+    columnActionGroup->addAction(ui->actionSingleColumn);
+    toolbar->addAction(ui->actionDualColumn);
+    columnActionGroup->addAction(ui->actionDualColumn);
   toolbar->addAction(ui->actionMenu);
   //Add the browser widgets
   RCBW = 0; //right column browser is unavailable initially
@@ -400,7 +404,6 @@ void DirWidget::dir_changed(){
 
 void DirWidget::on_actionSingleColumn_triggered(bool checked){
   if(!checked){ return; }
-  ui->actionDualColumn->setChecked(false);
   if(RCBW==0){ return; } //nothing to do
   ui->browser_layout->removeWidget(RCBW);
   RCBW->deleteLater();
@@ -410,7 +413,6 @@ void DirWidget::on_actionSingleColumn_triggered(bool checked){
 
 void DirWidget::on_actionDualColumn_triggered(bool checked){
    if(!checked){ return; }
-  ui->actionSingleColumn->setChecked(false);
   if(RCBW!=0){ return; } //nothing to do
   RCBW = new BrowserWidget("rc", this);
   ui->browser_layout->addWidget(RCBW);
@@ -477,8 +479,9 @@ void DirWidget::OpenContextMenu(){
 
 void DirWidget::UpdateContextMenu(){
   //First generate the context menu based on the selection
-  //qDebug() << "Update context menu";
   QStringList sel = currentBrowser()->currentSelection();
+  //qDebug() << "Update context menu";
+  //qDebug() << "  Selection:" << sel;
   contextMenu->clear();
 
   if(!sel.isEmpty()){  
@@ -488,15 +491,22 @@ void DirWidget::UpdateContextMenu(){
   contextMenu->addSection(LXDG::findIcon("unknown",""), tr("File Operations"));
  // contextMenu->addMenu(cFModMenu);
  //   cFModMenu->setEnabled(!sel.isEmpty() && canmodify);
-  contextMenu->addMenu(cFViewMenu);
-    contextMenu->setEnabled(!sel.isEmpty());
-    contextMenu->addAction(LXDG::findIcon("edit-rename",""), tr("Rename..."), this, SLOT(renameFiles()), kRename->key() );
-    contextMenu->addAction(LXDG::findIcon("edit-cut",""), tr("Cut Selection"), this, SLOT(cutFiles()), kCut->key() );
-    contextMenu->addAction(LXDG::findIcon("edit-copy",""), tr("Copy Selection"), this, SLOT(copyFiles()), kCopy->key() );
-    contextMenu->addAction(LXDG::findIcon("edit-paste",""), tr("Paste"), this, SLOT(pasteFiles()), QKeySequence(Qt::CTRL+Qt::Key_V) )->setEnabled(QApplication::clipboard()->mimeData()->hasFormat("x-special/lumina-copied-files") && canmodify);
-    contextMenu->addSeparator();
-    contextMenu->addAction(LXDG::findIcon("edit-delete",""), tr("Delete Selection"), this, SLOT(removeFiles()), kDel->key() );
-    contextMenu->addSeparator();
+
+    if(!sel.isEmpty()){
+      contextMenu->addAction(LXDG::findIcon("edit-rename",""), tr("Rename..."), this, SLOT(renameFiles()), kRename->key() )->setEnabled(canmodify);
+      contextMenu->addAction(LXDG::findIcon("edit-cut",""), tr("Cut Selection"), this, SLOT(cutFiles()), kCut->key() )->setEnabled(canmodify);
+      contextMenu->addAction(LXDG::findIcon("edit-copy",""), tr("Copy Selection"), this, SLOT(copyFiles()), kCopy->key() )->setEnabled(canmodify);
+    }
+    if( QApplication::clipboard()->mimeData()->hasFormat("x-special/lumina-copied-files") ){
+      contextMenu->addAction(LXDG::findIcon("edit-paste",""), tr("Paste"), this, SLOT(pasteFiles()), QKeySequence(Qt::CTRL+Qt::Key_V) )->setEnabled(canmodify);
+    }
+    if(!sel.isEmpty()){
+      contextMenu->addSeparator();
+      contextMenu->addAction(LXDG::findIcon("edit-delete",""), tr("Delete Selection"), this, SLOT(removeFiles()), kDel->key() )->setEnabled(canmodify);
+      contextMenu->addSeparator();
+    }
+    contextMenu->addMenu(cFViewMenu);
+    cFViewMenu->setEnabled(!sel.isEmpty());
 
   //Now add the general selection options
   contextMenu->addSection(LXDG::findIcon("folder","inode/directory"), tr("Directory Operations"));

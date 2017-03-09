@@ -59,7 +59,7 @@ void XDGDesktop::sync(){
       if(!CDA.ID.isEmpty()){ actions << CDA; CDA = XDGDesktopAction(); }
     }else if(line.startsWith("[")){ insection=false; inaction = false; }
     //Now check if this is the beginning of a section
-    if(line=="[Desktop Entry]"){ insection=true; continue; }
+    if(line=="[Desktop Entry]"){ insection=true;  continue; }
     else if(line.startsWith("[Desktop Action ")){ 
       //Grab the ID of the action out of the label
       CDA.ID = line.section("]",0,0).section("Desktop Action",1,1).simplified();
@@ -127,11 +127,12 @@ void XDGDesktop::sync(){
     else if(var=="Type" && insection){
       if(val.toLower()=="application"){ type = XDGDesktop::APP; }
       else if(val.toLower()=="link"){ type = XDGDesktop::LINK; }
-      else if(val.toLower()=="dir"){ type = XDGDesktop::DIR; }
+      else if(val.toLower().startsWith("dir")){ type = XDGDesktop::DIR; } //older specs are "Dir", newer specs are "Directory"
       else{ type = XDGDesktop::BAD; } //Unknown type
-      //hasType = true;
     }
   } //end reading file
+  if(!CDA.ID.isEmpty()){ actions << CDA; CDA = XDGDesktopAction(); } //if an action was still being read, add that to the list now
+
   file.clear(); //done with contents of file
   //If there are OnlyShowIn desktops listed, add them to the name
   if( !showInList.isEmpty() && !showInList.contains("Lumina", Qt::CaseInsensitive) ){
@@ -176,7 +177,7 @@ bool XDGDesktop::isValid(bool showAll){
       //if(DEBUG && !ok){ qDebug() << " - Link with missing URL"; }
       break;
     case XDGDesktop::DIR:
-      ok = !path.isEmpty();
+      ok = !path.isEmpty() && QFile::exists(path);
       //if(DEBUG && !ok){ qDebug() << " - Dir with missing path"; }
       break;
     default:
@@ -220,13 +221,13 @@ QString XDGDesktop::getDesktopExec(QString ActionID){
     out = term+" -e "+out;  //-e is a nearly-universal flag for terminal emulators
   }
   //Now perform any of the XDG flag substitutions as appropriate (9/2014 standards)
-  if(out.contains("%i") && !icon.isEmpty() ){ out.replace("%i", "--icon \'"+icon+"\'"); }
+  if(out.contains("%i") && !icon.isEmpty() ){ out.replace("%i", "--icon \""+icon+"\""); }
   if(out.contains("%c")){ 
-    if(!name.isEmpty()){ out.replace("%c", "\'"+name+"\'"); }
-    else if(!genericName.isEmpty()){ out.replace("%c", "\'"+genericName+"\'"); }
-    else{ out.replace("%c", "\'"+filePath.section("/",-1).section(".desktop",0,0)+"\'"); }
+    if(!name.isEmpty()){ out.replace("%c", "\""+name+"\""); }
+    else if(!genericName.isEmpty()){ out.replace("%c", "\""+genericName+"\""); }
+    else{ out.replace("%c", "\""+filePath.section("/",-1).section(".desktop",0,0)+"\""); }
   }
-  if(out.contains("%k")){ out.replace("%k", "\'"+filePath+"\'"); }
+  if(out.contains("%k")){ out.replace("%k", "\""+filePath+"\""); }
   return out;
 }
 
@@ -477,7 +478,7 @@ void XDGDesktopList::updateList(){
   bool firstrun = lastCheck.isNull() || oldkeys.isEmpty();
   lastCheck = QDateTime::currentDateTime();
   //Variables for internal loop use only (to prevent re-initializing variable on every iteration)
-  bool ok; QString path; QDir dir;  QStringList apps;
+  QString path; QDir dir;  QStringList apps;
   for(int i=0; i<appDirs.length(); i++){
     if( !dir.cd(appDirs[i]) ){ continue; } //could not open dir for some reason
     apps = dir.entryList(QStringList() << "*.desktop",QDir::Files, QDir::Name);
@@ -486,11 +487,9 @@ void XDGDesktopList::updateList(){
       if(files.contains(path) && (files.value(path)->lastRead>QFileInfo(path).lastModified()) ){ 
         //Re-use previous data for this file (nothing changed)
         found << files[path]->name;  //keep track of which files were already found
-        ok=true;
       }else{
-      	ok=false;
-        if(files.contains(path)){ appschanged = true; files.take(path)->deleteLater(); } //files.remove(path); }
-      	XDGDesktop *dFile = new XDGDesktop(path, this); //will change the "ok" variable as needed
+        if(files.contains(path)){ appschanged = true; files.take(path)->deleteLater(); }
+      	XDGDesktop *dFile = new XDGDesktop(path, this);
         if(dFile->type!=XDGDesktop::BAD){
           appschanged = true; //flag that something changed - needed to load a file
           if(!oldkeys.contains(path)){ newfiles << path; } //brand new file (not an update to a previously-read file)

@@ -8,6 +8,11 @@
         <source>Select Application</source>
         <translation>Vybrat aplikaci</translation>
     </message>
+    <message>
+        <location filename="../AppDialog.ui" line="20"/>
+        <source>Search for....</source>
+        <translation type="unfinished">Hledat...</translation>
+    </message>
 </context>
 <context>
     <name>ColorDialog</name>
@@ -376,7 +381,7 @@ Přepsat je?</translation>
     <message>
         <location filename="../LPlugins.cpp" line="137"/>
         <source>View and control any running application windows (every individual window has a button)</source>
-        <translation>Zobrazit a ovládat všechna běžící okna s programy (všechna jednotlivá okna mají tlačítko).</translation>
+        <translation>Zobrazit a ovládat všechna běžící okna s programy (všechna jednotlivá okna mají tlačítko)</translation>
     </message>
     <message>
         <location filename="../LPlugins.cpp" line="150"/>
@@ -531,12 +536,12 @@ Přepsat je?</translation>
     <message>
         <location filename="../LPlugins.cpp" line="312"/>
         <source>Lock Session</source>
-        <translation type="unfinished"></translation>
+        <translation>Uzamknout sezení</translation>
     </message>
     <message>
         <location filename="../LPlugins.cpp" line="313"/>
         <source>Lock the current desktop session</source>
-        <translation type="unfinished"></translation>
+        <translation>Uzamknout nynější sezení plochy</translation>
     </message>
     <message>
         <location filename="../LPlugins.cpp" line="323"/>
@@ -596,7 +601,7 @@ Přepsat je?</translation>
     <message>
         <location filename="../LPlugins.cpp" line="354"/>
         <source>Dominant color for the theme.</source>
-        <translation>Převládající barva pro motiv.</translation>
+        <translation>Převládající barva pro vzhled.</translation>
     </message>
     <message>
         <location filename="../LPlugins.cpp" line="359"/>
@@ -606,7 +611,7 @@ Přepsat je?</translation>
     <message>
         <location filename="../LPlugins.cpp" line="360"/>
         <source>Dominant color for the theme (more subdued).</source>
-        <translation>Převládající barva pro motiv (tlumenější).</translation>
+        <translation>Převládající barva pro vzhled (tlumenější).</translation>
     </message>
     <message>
         <location filename="../LPlugins.cpp" line="365"/>
@@ -616,7 +621,7 @@ Přepsat je?</translation>
     <message>
         <location filename="../LPlugins.cpp" line="366"/>
         <source>Alternate color for the theme.</source>
-        <translation>Náhradní barva pro motiv.</translation>
+        <translation>Náhradní barva pro vzhled.</translation>
     </message>
     <message>
         <location filename="../LPlugins.cpp" line="371"/>
@@ -626,7 +631,7 @@ Přepsat je?</translation>
     <message>
         <location filename="../LPlugins.cpp" line="372"/>
         <source>Alternate color for the theme (more subdued).</source>
-        <translation>Náhradní barva pro motiv (tlumenější).</translation>
+        <translation>Náhradní barva pro vzhled (tlumenější).</translation>
     </message>
     <message>
         <location filename="../LPlugins.cpp" line="377"/>
@@ -681,7 +686,7 @@ Přepsat je?</translation>
     <message>
         <location filename="../pages/getPage.h" line="30"/>
         <source>Theme Settings</source>
-        <translation>Nastavení motivu</translation>
+        <translation>Nastavení vzhledu</translation>
     </message>
     <message>
         <location filename="../pages/getPage.h" line="30"/>
@@ -711,17 +716,17 @@ Přepsat je?</translation>
     <message>
         <location filename="../pages/getPage.h" line="29"/>
         <source>Wallpaper</source>
-        <translation type="unfinished"></translation>
+        <translation>Pozadí</translation>
     </message>
     <message>
         <location filename="../pages/getPage.h" line="30"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Vzhled</translation>
     </message>
     <message>
         <location filename="../pages/getPage.h" line="32"/>
         <source>Autostart</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatické spuštění</translation>
     </message>
     <message>
         <location filename="../pages/getPage.h" line="33"/>
@@ -761,27 +766,17 @@ Přepsat je?</translation>
     <message>
         <location filename="../pages/getPage.h" line="36"/>
         <source>Desktop</source>
-        <translation type="unfinished"></translation>
+        <translation>Plocha</translation>
     </message>
     <message>
         <location filename="../pages/getPage.h" line="37"/>
         <source>Panels</source>
-        <translation type="unfinished"></translation>
+        <translation>Panely</translation>
     </message>
     <message>
         <location filename="../pages/getPage.h" line="38"/>
         <source>Menu</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../pages/getPage.h" line="42"/>
-        <source>Input Device Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../pages/getPage.h" line="42"/>
-        <source>Adjust keyboard and mouse devices</source>
-        <translation type="unfinished"></translation>
+        <translation>Nabídka</translation>
     </message>
     <message>
         <location filename="../pages/getPage.h" line="36"/>
@@ -826,7 +821,7 @@ Přepsat je?</translation>
     <message>
         <location filename="../pages/getPage.h" line="39"/>
         <source>Localization</source>
-        <translation type="unfinished"></translation>
+        <translation>Jazyk</translation>
     </message>
     <message>
         <location filename="../pages/getPage.h" line="40"/>
@@ -898,12 +893,12 @@ Přepsat je?</translation>
     <message>
         <location filename="../ThemeDialog.ui" line="14"/>
         <source>Theme Editor</source>
-        <translation>Editor motivů</translation>
+        <translation>Editor vzhledů</translation>
     </message>
     <message>
         <location filename="../ThemeDialog.ui" line="28"/>
         <source>Theme Name:</source>
-        <translation>Název motivu:</translation>
+        <translation>Název vzhledu:</translation>
     </message>
     <message>
         <location filename="../ThemeDialog.ui" line="51"/>
@@ -929,14 +924,14 @@ Přepsat je?</translation>
         <location filename="../ThemeDialog.cpp" line="65"/>
         <location filename="../ThemeDialog.cpp" line="82"/>
         <source>Theme Exists</source>
-        <translation>Motiv existuje</translation>
+        <translation>Vzhled existuje</translation>
     </message>
     <message>
         <location filename="../ThemeDialog.cpp" line="65"/>
         <location filename="../ThemeDialog.cpp" line="82"/>
         <source>This theme already exists.
  Overwrite it?</source>
-        <translation>Tento motiv již existuje.
+        <translation>Tento vzhled již existuje.
 Přepsat jej?</translation>
     </message>
 </context>
@@ -985,12 +980,12 @@ Přepsat jej?</translation>
         <translation>Vybrat obrazovku/pracovní plochu k nastavení</translation>
     </message>
     <message>
-        <location filename="../mainWindow.cpp" line="129"/>
+        <location filename="../mainWindow.cpp" line="131"/>
         <source>Unsaved Changes</source>
         <translation>Neuložené změny</translation>
     </message>
     <message>
-        <location filename="../mainWindow.cpp" line="129"/>
+        <location filename="../mainWindow.cpp" line="131"/>
         <source>This page currently has unsaved changes, do you wish to save them now?</source>
         <translation>Tato strana má teď neuložené změny. Chcete je nyní uložit?</translation>
     </message>
@@ -1073,12 +1068,12 @@ Přepsat jej?</translation>
     <message>
         <location filename="../pages/page_compton.ui" line="39"/>
         <source>Only use compositing with GPU acceleration </source>
-        <translation type="unfinished"></translation>
+        <translation>Použít pouze kompozici pomocí zrychlení přes grafický procesor </translation>
     </message>
     <message>
         <location filename="../pages/page_compton.cpp" line="38"/>
-        <source>Compositor Settings</source>
-        <translation>Nastavení sazeče</translation>
+        <source>Window Effects</source>
+        <translation type="unfinished">Okenní efekty</translation>
     </message>
 </context>
 <context>
@@ -1165,31 +1160,27 @@ Přepsat jej?</translation>
         <translation>Výchozí aplikace</translation>
     </message>
     <message>
-        <location filename="../pages/page_defaultapps.cpp" line="61"/>
-        <location filename="../pages/page_defaultapps.cpp" line="82"/>
-        <location filename="../pages/page_defaultapps.cpp" line="103"/>
-        <location filename="../pages/page_defaultapps.cpp" line="124"/>
-        <location filename="../pages/page_defaultapps.cpp" line="220"/>
+        <location filename="../pages/page_defaultapps.cpp" line="153"/>
         <source>Click to Set</source>
         <translation>Klepnutím nastavit</translation>
     </message>
     <message>
-        <location filename="../pages/page_defaultapps.cpp" line="158"/>
+        <location filename="../pages/page_defaultapps.cpp" line="89"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../pages/page_defaultapps.cpp" line="330"/>
+        <location filename="../pages/page_defaultapps.cpp" line="273"/>
         <source>Select Binary</source>
         <translation>Vybrat spustitelný soubor</translation>
     </message>
     <message>
-        <location filename="../pages/page_defaultapps.cpp" line="337"/>
+        <location filename="../pages/page_defaultapps.cpp" line="280"/>
         <source>Invalid Binary</source>
         <translation>Neplatný spustitelný soubor</translation>
     </message>
     <message>
-        <location filename="../pages/page_defaultapps.cpp" line="337"/>
+        <location filename="../pages/page_defaultapps.cpp" line="280"/>
         <source>The selected binary is not executable!</source>
         <translation>Vybraný spustitelný soubor není spustitelný!</translation>
     </message>
@@ -1331,12 +1322,12 @@ Přepsat jej?</translation>
     <message>
         <location filename="../pages/page_fluxbox_settings.ui" line="118"/>
         <source>Window Theme</source>
-        <translation>Motiv okna</translation>
+        <translation>Vzhled okna</translation>
     </message>
     <message>
         <location filename="../pages/page_fluxbox_settings.ui" line="136"/>
         <source>Window Theme Preview</source>
-        <translation>Náhled na motiv okna</translation>
+        <translation>Náhled na vzhled okna</translation>
     </message>
     <message>
         <location filename="../pages/page_fluxbox_settings.ui" line="190"/>
@@ -1436,15 +1427,15 @@ Přepsat jej?</translation>
     <message>
         <location filename="../pages/page_interface_panels.ui" line="69"/>
         <source>Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Profil</translation>
     </message>
     <message>
         <location filename="../pages/page_interface_panels.ui" line="82"/>
         <source>Import</source>
-        <translation type="unfinished"></translation>
+        <translation>Zavedení</translation>
     </message>
     <message>
-        <location filename="../pages/page_interface_panels.cpp" line="52"/>
+        <location filename="../pages/page_interface_panels.cpp" line="59"/>
         <source>Desktop Settings</source>
         <translation>Nastavení pracovní plochy</translation>
     </message>
@@ -1462,62 +1453,34 @@ Přepsat jej?</translation>
         <translation>Hledat...</translation>
     </message>
     <message>
-        <location filename="../pages/page_main.cpp" line="53"/>
+        <location filename="../pages/page_main.cpp" line="56"/>
         <source>Interface Configuration</source>
         <translation>Nastavení rozhraní</translation>
     </message>
     <message>
-        <location filename="../pages/page_main.cpp" line="57"/>
+        <location filename="../pages/page_main.cpp" line="60"/>
         <source>Appearance</source>
         <translation>Vzhled</translation>
     </message>
     <message>
-        <location filename="../pages/page_main.cpp" line="61"/>
+        <location filename="../pages/page_main.cpp" line="64"/>
         <source>Desktop Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Výchozí nastavení plochy</translation>
     </message>
     <message>
-        <location filename="../pages/page_main.cpp" line="65"/>
+        <location filename="../pages/page_main.cpp" line="68"/>
         <source>User Settings</source>
         <translation>Uživatelská nastavení</translation>
     </message>
     <message>
-        <location filename="../pages/page_main.cpp" line="131"/>
+        <location filename="../pages/page_main.cpp" line="72"/>
+        <source>System Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../pages/page_main.cpp" line="145"/>
         <source>Desktop Settings</source>
         <translation>Nastavení pracovní plochy</translation>
-    </message>
-</context>
-<context>
-    <name>page_mouse</name>
-    <message>
-        <location filename="../pages/page_mouse.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished">Formulář</translation>
-    </message>
-    <message>
-        <location filename="../pages/page_mouse.cpp" line="53"/>
-        <source>Input Device Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../pages/page_mouse.cpp" line="81"/>
-        <source>Mouse #%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../pages/page_mouse.cpp" line="85"/>
-        <source>Keyboard #%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../pages/page_mouse.cpp" line="106"/>
-        <source>Extension Device #%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../pages/page_mouse.cpp" line="107"/>
-        <source>Master Device</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1613,7 +1576,7 @@ Přepsat jej?</translation>
     <message>
         <location filename="../pages/page_session_options.ui" line="65"/>
         <source>Show application crash data</source>
-        <translation type="unfinished"></translation>
+        <translation>Ukázat údaje o pádu programu</translation>
     </message>
     <message>
         <location filename="../pages/page_session_options.ui" line="74"/>
@@ -1683,142 +1646,142 @@ Přepsat jej?</translation>
         <translation>Nejprve datum, potom čas</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="70"/>
+        <location filename="../pages/page_session_options.cpp" line="82"/>
         <source>Desktop Settings</source>
         <translation>Nastavení pracovní plochy</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="113"/>
+        <location filename="../pages/page_session_options.cpp" line="125"/>
         <source>Select an image</source>
         <translation>Vyberte obrázek</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="114"/>
+        <location filename="../pages/page_session_options.cpp" line="126"/>
         <source>Images</source>
         <translation>Obrázky</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="118"/>
+        <location filename="../pages/page_session_options.cpp" line="130"/>
         <source>Reset User Image</source>
         <translation>Nastavit obrázek uživatele znovu</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="118"/>
+        <location filename="../pages/page_session_options.cpp" line="130"/>
         <source>Would you like to reset the user image to the system default?</source>
         <translation>Chcete nastavit obrázek uživatele na výchozí obrázek systému?</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="157"/>
+        <location filename="../pages/page_session_options.cpp" line="169"/>
         <source>Valid Time Codes:</source>
         <translation>Platné časové kódy:</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="158"/>
+        <location filename="../pages/page_session_options.cpp" line="170"/>
         <source>%1: Hour without leading zero (1)</source>
         <translation>%1: Hodina jako číslo bez nuly na začátku (1)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="159"/>
+        <location filename="../pages/page_session_options.cpp" line="171"/>
         <source>%1: Hour with leading zero (01)</source>
         <translation>%1: Hodina jako číslo s nulou na začátku (01)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="160"/>
+        <location filename="../pages/page_session_options.cpp" line="172"/>
         <source>%1: Minutes without leading zero (2)</source>
         <translation>%1: Minuta jako číslo bez nuly na začátku (2)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="161"/>
+        <location filename="../pages/page_session_options.cpp" line="173"/>
         <source>%1: Minutes with leading zero (02)</source>
         <translation>%1: Minuty jako čísla s nulou na začátku (02)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="162"/>
+        <location filename="../pages/page_session_options.cpp" line="174"/>
         <source>%1: Seconds without leading zero (3)</source>
         <translation>%1: sekundy jako čísla bez nuly na začátku (3)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="163"/>
+        <location filename="../pages/page_session_options.cpp" line="175"/>
         <source>%1: Seconds with leading zero (03)</source>
         <translation>%1: sekundy jako čísla s nulou na začátku (03)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="164"/>
+        <location filename="../pages/page_session_options.cpp" line="176"/>
         <source>%1: AM/PM (12-hour) clock (upper or lower case)</source>
         <translation>%1: AM/PM (12-hodinové) hodiny (velká nebo malá písmena)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="165"/>
+        <location filename="../pages/page_session_options.cpp" line="177"/>
         <source>%1: Timezone</source>
         <translation>%1: Časové pásmo</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="166"/>
+        <location filename="../pages/page_session_options.cpp" line="178"/>
         <source>Time Codes</source>
         <translation>Časové kódy</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="180"/>
+        <location filename="../pages/page_session_options.cpp" line="192"/>
         <source>Valid Date Codes:</source>
         <translation>Platné kódy data:</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="181"/>
+        <location filename="../pages/page_session_options.cpp" line="193"/>
         <source>%1: Numeric day without a leading zero (1)</source>
         <translation>%1: Den jako číslo bez nuly na začátku (1)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="182"/>
+        <location filename="../pages/page_session_options.cpp" line="194"/>
         <source>%1: Numeric day with leading zero (01)</source>
         <translation>%1: Den jako číslo s nulou na začátku (01)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="183"/>
+        <location filename="../pages/page_session_options.cpp" line="195"/>
         <source>%1: Day as abbreviation (localized)</source>
         <translation>%1: Den jako zkratka (lokalizovaná)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="184"/>
+        <location filename="../pages/page_session_options.cpp" line="196"/>
         <source>%1: Day as full name (localized)</source>
         <translation>%1: Den jako plný název (lokalizovaný)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="185"/>
+        <location filename="../pages/page_session_options.cpp" line="197"/>
         <source>%1: Numeric month without leading zero (2)</source>
         <translation>%1: Číselný měsíc bez nuly na začátku (2)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="186"/>
+        <location filename="../pages/page_session_options.cpp" line="198"/>
         <source>%1: Numeric month with leading zero (02)</source>
         <translation>%1: Číselný měsíc s nulou na začátku (02)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="187"/>
+        <location filename="../pages/page_session_options.cpp" line="199"/>
         <source>%1: Month as abbreviation (localized)</source>
         <translation>%1: Měsíc jako zkratka (lokalizovaná)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="188"/>
+        <location filename="../pages/page_session_options.cpp" line="200"/>
         <source>%1: Month as full name (localized)</source>
         <translation>%1: Měsíc jako plný název (lokalizovaný)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="189"/>
+        <location filename="../pages/page_session_options.cpp" line="201"/>
         <source>%1: Year as 2-digit number (15)</source>
         <translation>%1: Rok jako dvojmístné číslo (15)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="190"/>
+        <location filename="../pages/page_session_options.cpp" line="202"/>
         <source>%1: Year as 4-digit number (2015)</source>
         <translation>%1: Rok jako čtyřmístné číslo (2015)</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="191"/>
+        <location filename="../pages/page_session_options.cpp" line="203"/>
         <source>Text may be contained within single-quotes to ignore replacements</source>
         <translation>Text musí být v jednoduchých závorkách, aby se přehlížela nahrazení</translation>
     </message>
     <message>
-        <location filename="../pages/page_session_options.cpp" line="192"/>
+        <location filename="../pages/page_session_options.cpp" line="204"/>
         <source>Date Codes</source>
         <translation>Kódy dat</translation>
     </message>
@@ -1833,7 +1796,7 @@ Přepsat jej?</translation>
     <message>
         <location filename="../pages/page_theme.ui" line="36"/>
         <source>Desktop Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Vzhled plochy</translation>
     </message>
     <message>
         <location filename="../pages/page_theme.ui" line="42"/>
@@ -1853,12 +1816,12 @@ Přepsat jej?</translation>
     <message>
         <location filename="../pages/page_theme.ui" line="70"/>
         <source>Theme Template:</source>
-        <translation>Šablony motivů:</translation>
+        <translation>Šablony vzhledů:</translation>
     </message>
     <message>
         <location filename="../pages/page_theme.ui" line="86"/>
         <source>Create/Edit a theme template (Advanced)</source>
-        <translation>Vytvořit/Upravit šablonu motivu (pokročilé)</translation>
+        <translation>Vytvořit/Upravit šablonu vzhledu (pokročilé)</translation>
     </message>
     <message>
         <location filename="../pages/page_theme.ui" line="92"/>
@@ -1889,17 +1852,17 @@ Přepsat jej?</translation>
     <message>
         <location filename="../pages/page_theme.ui" line="192"/>
         <source>Application Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>Vzhledy programů</translation>
     </message>
     <message>
         <location filename="../pages/page_theme.ui" line="198"/>
         <source>Qt5 Theme Engine</source>
-        <translation type="unfinished"></translation>
+        <translation>Stroj vzhledu Qt5</translation>
     </message>
     <message>
         <location filename="../pages/page_theme.cpp" line="58"/>
         <source>Theme Settings</source>
-        <translation>Nastavení motivu</translation>
+        <translation>Nastavení vzhledu</translation>
     </message>
     <message>
         <location filename="../pages/page_theme.cpp" line="73"/>
@@ -1920,12 +1883,12 @@ Přepsat jej?</translation>
     <message>
         <location filename="../pages/page_theme.cpp" line="137"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Žádný</translation>
     </message>
     <message>
         <location filename="../pages/page_theme.cpp" line="138"/>
         <source>Manual Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>Ruční nastavení</translation>
     </message>
 </context>
 <context>

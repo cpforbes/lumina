@@ -6,7 +6,6 @@
 //===========================================
 #include "page_compton.h"
 #include "ui_page_compton.h"
-#include "getPage.h"
 
 //==========
 //    PUBLIC
@@ -35,7 +34,7 @@ void page_compton::SaveSettings(){
 }
 
 void page_compton::LoadSettings(int){
-  emit ChangePageTitle( tr("Compositor Settings") );
+  emit ChangePageTitle( tr("Window Effects") );
   QSettings settings("lumina-desktop","sessionsettings");
     ui->check_disablecompton->setChecked( !settings.value("enableCompositing", true).toBool() );
     ui->check_GPUverify->setChecked( settings.value("compositingWithGpuAccelOnly", true).toBool() );

@@ -1,6 +1,6 @@
 //===========================================
 //  Lumina-DE source code
-//  Copyright (c) 2012, Ken Moore
+//  Copyright (c) 2012-2017, Ken Moore
 //  Available under the 3-clause BSD license
 //  See the LICENSE file for full details
 //===========================================
@@ -32,9 +32,10 @@
 void printUsageInfo(){
   qDebug() << "lumina-open: Application launcher for the Lumina Desktop Environment";
   qDebug() << "Description: Given a file (with absolute path) or URL, this utility will try to find the appropriate application with which to open the file. If the file is a *.desktop application shortcut, it will just start the application appropriately. It can also perform a few specific system operations if given special flags.";
-  qDebug() << "Usage: lumina-open [-select] <absolute file path or URL>";
+  qDebug() << "Usage: lumina-open [-select] [-action <ActionID>] <absolute file path or URL>";
   qDebug() << "           lumina-open [-volumeup, -volumedown, -brightnessup, -brightnessdown]";
   qDebug() << "  [-select] (optional) flag to bypass any default application settings and show the application selector window";
+  qDebug() << "  [-action <ActionID>] (optional) Flag to run one of the alternate Actions listed in a .desktop registration file rather than the main command.";
   qDebug() << "Special Flags:";
   qDebug() << " \"-volume[up/down]\" Flag to increase/decrease audio volume by 5%";
   qDebug() << " \"-brightness[up/down]\" Flag to increase/decrease screen brightness by 5%";
@@ -234,7 +235,7 @@ void getCMD(int argc, char ** argv, QString& binary, QString& args, QString& pat
   if(inFile.startsWith("file://")){ inFile.remove(0,7); }
   //First make sure this is not a binary name first
   QString bin = inFile.section(" ",0,0).simplified();
-  if(LUtils::isValidBinary(bin) && !bin.endsWith(".desktop") && !QFileInfo(inFile).isDir() ){isFile=true; extension="binary"; }
+  if(LUtils::isValidBinary(bin) && !bin.endsWith(".desktop") && !QFileInfo(inFile).isDir() ){isFile=true; }
   //Now check what type of file this is
   else if(QFile::exists(inFile)){ isFile=true; }
   else if(QFile::exists(QDir::currentPath()+"/"+inFile)){isFile=true; inFile = QDir::currentPath()+"/"+inFile;} //account for relative paths
@@ -248,7 +249,7 @@ void getCMD(int argc, char ** argv, QString& binary, QString& args, QString& pat
     extension=info.suffix();
     //qDebug() << " - Extension:" << extension;
     if(info.isDir()){ extension="inode/directory"; }
-    else if(info.isExecutable() && extension.isEmpty()){ extension="binary"; }
+    else if(info.isExecutable() && (extension.isEmpty() || extension=="sh") ){ extension="binary"; }
     else if(extension!="desktop"){ extension="mimetype"; } //flag to check for mimetype default based on file
   }
   else if(isUrl && inFile.startsWith("mailto:")){ extension = "application/email"; }
@@ -265,8 +266,10 @@ void getCMD(int argc, char ** argv, QString& binary, QString& args, QString& pat
     }
     switch(DF.type){
       case XDGDesktop::APP:
+        qDebug() << "Found .desktop application:" << ActionID;
         if(!DF.exec.isEmpty()){
           cmd = DF.getDesktopExec(ActionID);
+          qDebug() << "Got command:" << cmd;
           if(!DF.path.isEmpty()){ path = DF.path; }
 	  watch = DF.startupNotify || !DF.filePath.contains("/xdg/autostart/");
         }else{
@@ -279,6 +282,8 @@ void getCMD(int argc, char ** argv, QString& binary, QString& args, QString& pat
           inFile = DF.url;
           cmd.clear();
           extension = inFile.section(":",0,0);
+	  if(extension=="file"){ extension = "http"; } //local file URL - Make sure we use the default browser for a LINK type
+          extension.prepend("x-scheme-handler/");
 	  watch = DF.startupNotify || !DF.filePath.contains("/xdg/autostart/");
         }else{
 	  ShowErrorDialog( argc, argv, QString(QObject::tr("URL shortcut is missing the URL: %1")).arg(inFile) );
@@ -289,7 +294,7 @@ void getCMD(int argc, char ** argv, QString& binary, QString& args, QString& pat
           //This is a directory link - adjust inputs
           inFile = DF.path;
           cmd.clear();
-          extension = "directory";
+          extension = "inode/directory";
 	  watch = DF.startupNotify || !DF.filePath.contains("/xdg/autostart/");
         }else{
 	  ShowErrorDialog( argc, argv, QString(QObject::tr("Directory shortcut is missing the path to the directory: %1")).arg(inFile) );
@@ -337,7 +342,7 @@ void getCMD(int argc, char ** argv, QString& binary, QString& args, QString& pat
       cmd.append(" \""+inFile+"\"");
     }
   }
-  //qDebug() << "Found Command:" << cmd << "Extension:" << extension;
+  qDebug() << "Found Command:" << cmd << "Extension:" << extension;
   //Clean up any leftover "Exec" field codes (should have already been replaced earlier)
   if(cmd.contains("%")){cmd = cmd.remove("%U").remove("%u").remove("%F").remove("%f").remove("%i").remove("%c").remove("%k").simplified(); }
   binary = cmd; //pass this string to the calling function

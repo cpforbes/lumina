@@ -41,7 +41,7 @@ bool Browser::showingHiddenFiles(){
 //   PRIVATE
 void Browser::loadItem(QString info){
   //qDebug() << "LoadItem:" << info;
-  ////FileItem item;
+  //FileItem item;
      //itemame = info;
   QByteArray bytes;
   if(imageFormats.contains(info.section(".",-1).toLower()) ){
@@ -56,14 +56,19 @@ void Browser::loadItem(QString info){
       if(pix.height()>128){ pix = pix.scaled(128, 128, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation); }
       item.icon.addPixmap(pix);
     }*/
-  }/*else if(item.info.isDir()){
-    item.icon = LXDG::findIcon("folder","inode/directory");
   }
-  if(item.icon.isNull()){ item.icon = LXDG::findIcon(item.info.mimetype(), "unknown"); }*/
   //qDebug() << " - done with item:" << info;
-  emit threadDone(info, bytes);
-  //return item;
+  this->emit threadDone(info, bytes);
 }
+
+QIcon Browser::loadIcon(QString icon){
+  if(!mimeIcons.contains(icon)){ 
+    mimeIcons.insert(icon, LXDG::findIcon(icon, "unknown"));
+  }
+
+  return mimeIcons[icon];
+}
+
 
 // PRIVATE SLOTS
 void Browser::fileChanged(QString file){
@@ -86,11 +91,13 @@ void Browser::futureFinished(QString name, QByteArray icon){
         QPixmap pix;
         if(pix.loadFromData(icon) ){ ico.addPixmap(pix); }
       }else if(info.isDir()){
-        ico = LXDG::findIcon("folder","inode/directory");
+        ico = loadIcon("folder"); 
+        //LXDG::findIcon("folder","inode/directory");
       }
       if(ico.isNull()){ 
 	//qDebug() << "MimeType:" << info.fileName() << info.mimetype();
-       ico = LXDG::findIcon( info.iconfile(), "unknown" ); 
+        ico = loadIcon(info.iconfile());
+       //ico = LXDG::findIcon( info.iconfile(), "unknown" ); 
       }
       this->emit itemDataAvailable( ico, info );
 }
@@ -117,15 +124,21 @@ void Browser::loadDirectory(QString dir){
     if(showHidden){ files = directory.entryList( QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot, QDir::NoSort); }
     else{ files = directory.entryList( QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot, QDir::NoSort); }
     emit itemsLoading(files.length());
-    QCoreApplication::processEvents();
+    //QCoreApplication::processEvents();
+    //QCoreApplication::sendPostedEvents();
     for(int i=0; i<files.length(); i++){
       watcher->addPath(directory.absoluteFilePath(files[i]));
       //qDebug() << "Future Starting:" << files[i];
       QString path = directory.absoluteFilePath(files[i]);
       if(old.contains(path)){ old.removeAll(path); }
       oldFiles << path; //add to list for next time
-      QtConcurrent::run(this, &Browser::loadItem, path );
-      QCoreApplication::sendPostedEvents();
+      if(imageFormats.contains(path.section(".",-1).toLower()) || path.endsWith(".desktop")){
+        QtConcurrent::run(this, &Browser::loadItem, path );
+        //QCoreApplication::sendPostedEvents();
+      }else{
+        //No special icon loading - do it in-line here
+        loadItem(path);
+      }
     }
     watcher->addPath(directory.absolutePath());
     if(!old.isEmpty()){

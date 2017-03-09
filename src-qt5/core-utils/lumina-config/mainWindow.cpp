@@ -25,6 +25,8 @@ mainWindow::mainWindow() : QMainWindow(), ui(new Ui::mainWindow()){
   ui->toolBar->insertWidget(ui->actionSave, tmp); //after the save button
   backShortcut = new QShortcut(Qt::Key_Escape, this);
     connect(backShortcut, SIGNAL(activated()), this, SLOT(on_actionBack_triggered()) );
+  quitShortcut = new QShortcut(Qt::CTRL + Qt::Key_Q, this);
+    connect(quitShortcut, SIGNAL(activated()), this, SLOT(on_quitShortcut_Triggered()) );
   setupIcons();
   loadMonitors();
   //changePage(""); //load the default main page
@@ -84,7 +86,7 @@ void mainWindow::changePage(QString id){
   PageWidget *page = 0;
   QString oldpage = this->centralWidget()->whatsThis();
   if(id!=cpage || cpage!=oldpage){
-    page =  GetNewPage(id, this);
+    page =  Pages::GetNewPage(id, this);
     if(page==0){ return; }
     qDebug() << "Changing page:" << id;
     cpage = id;
@@ -141,8 +143,12 @@ void mainWindow::on_actionSave_triggered(){
 }
 
 void mainWindow::on_actionBack_triggered(){
-  if(cpage.isEmpty()){ }// page_main::clearlineEdit(); } //since ESC doesnt close any other Lumina Appliction by default, I've commented this out for the time being.
-  else{ page_change(""); } //Use the interactive wrapper (check for save state, etc).
+  if(cpage.isEmpty()){ static_cast<page_main*>( this->centralWidget() )->clearlineEdit(); }
+   else{ page_change(""); } //Use the interactive wrapper (check for save state, etc).
+}
+
+void mainWindow::on_quitShortcut_Triggered(){
+    QApplication::quit();
 }
 
 void mainWindow::changeMonitor(QAction *act){

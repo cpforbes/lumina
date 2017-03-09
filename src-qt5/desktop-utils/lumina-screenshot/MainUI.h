@@ -18,6 +18,7 @@
 #include <QSettings>
 #include <QAction>
 #include <QScreen>
+#include <QTabBar>
 
 #include <LuminaXDG.h>
 #include <LUtils.h>
@@ -40,13 +41,14 @@ public slots:
 
 private:
 	Ui::MainUI *ui;
-	bool mousegrabbed;
+	bool mousegrabbed, picSaved, closeOnSave;
 	QRect lastgeom;
 	QString ppath; //previous file path
 	WId cwin; //current window to screenshot
 	QSettings *settings;
 	LXCB *XCB; //Library access to window subsystems
 	QTimer *scaleTimer;
+	QTabBar *tabbar;
 
 	//Image Editor widget
 	ImageEditor *IMG;
@@ -61,12 +63,16 @@ private slots:
 	}
 	void saveScreenshot();
 	void quicksave();
+	void copyToClipboard();
 
 	void startScreenshot();
 
 	void imgselchanged(bool hassel);
 	void imgScalingChanged(int percent = -1);
 	void sliderChanged();
+
+	void tabChanged(int);
+	void showPopupsChanged(bool);
 
 	//Utility functions to perform a screenshot
 	bool getWindow(); //set the "cwin" variable as appropriate
@@ -75,6 +81,7 @@ private slots:
 protected:
 	void mouseReleaseEvent(QMouseEvent *ev);
 	void resizeEvent(QResizeEvent *ev);
+	void closeEvent( QCloseEvent *ev);
 };
 
 #endif

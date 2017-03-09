@@ -6,7 +6,6 @@
 //===========================================
 #include "page_session_options.h"
 #include "ui_page_session_options.h"
-#include "getPage.h"
 
 //==========
 //    PUBLIC
@@ -62,6 +61,18 @@ void page_session_options::SaveSettings(){
     QFile file(lopenWatchFile);
     if(file.open(QIODevice::WriteOnly) ){ file.close(); } //just need to touch it to create the file
   }
+
+  //User Icon
+  QString path = QDir::homePath()+"/.loginIcon.png"; //where the icon should be placed
+  QString icopath = ui->push_session_setUserIcon->whatsThis();
+  qDebug() << "User Icon:" << icopath;
+  if(icopath != path && QFile::exists(icopath)){
+    QPixmap ico(icopath);
+    ico = ico.scaled(64,64, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    bool ok = ico.save(path);
+    qDebug() << "  - Saved User Icon:" << ok;
+  }
+
   emit HasPendingChanges(false);
 }
 

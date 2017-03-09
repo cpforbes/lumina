@@ -16,6 +16,7 @@
 //LibLumina X11 class
 #include <LuminaX11.h>
 #include <LUtils.h>
+#include <ExternalProcess.h>
 
 #include <unistd.h> //for usleep() usage
 
@@ -158,7 +159,10 @@ void LSession::setupSession(){
     //Try to watch the localized desktop folder too
     if(QFile::exists(QDir::homePath()+"/"+tr("Desktop"))){ watcherChange( QDir::homePath()+"/"+tr("Desktop") ); }
     watcherChange( QDir::homePath()+"/Desktop" );
-
+    //And watch the /media directory
+   if(QFile::exists("/media")){  watcherChange("/media"); }
+   if(!QFile::exists("/tmp/.autofs_change")){ system("touch /tmp/.autofs_change"); }
+   watcherChange("/tmp/.autofs_change");
   //connect internal signals/slots
   connect(watcher, SIGNAL(directoryChanged(QString)), this, SLOT(watcherChange(QString)) );
   connect(watcher, SIGNAL(fileChanged(QString)), this, SLOT(watcherChange(QString)) );
@@ -276,8 +280,9 @@ void LSession::launchStartupApps(){
     LOS::setScreenBrightness( tmp );
     qDebug() << " - - Screen Brightness:" << QString::number(tmp)+"%";
   }
-  QProcess::startDetached("nice lumina-open -autostart-apps");
-  
+  //QProcess::startDetached("nice lumina-open -autostart-apps");
+  ExternalProcess::launch("nice lumina-open -autostart-apps");
+
   //Re-load the screen brightness and volume settings from the previous session
   // Wait until after the XDG-autostart functions, since the audio system might be started that way
   qDebug() << " - Loading previous settings";
@@ -337,6 +342,8 @@ void LSession::watcherChange(QString changed){
     desktopFiles = QDir(changed).entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs ,QDir::Name | QDir::IgnoreCase | QDir::DirsFirst);
     if(DEBUG){ qDebug() << "New Desktop Files:" << desktopFiles.length(); }
     emit DesktopFilesChanged(); 
+  }else if(changed.toLower() == "/media" || changed == "/tmp/.autofs_change" ){
+    emit MediaFilesChanged();
   }else if(changed.endsWith("favorites.list")){ emit FavoritesChanged(); }
   //Now ensure this file was not removed from the watcher
   if(!watcher->files().contains(changed) && !watcher->directories().contains(changed)){
@@ -524,7 +531,8 @@ void LSession::SessionEnding(){
 //===============
 void LSession::LaunchApplication(QString cmd){
   LSession::setOverrideCursor(QCursor(Qt::BusyCursor));
-  QProcess::startDetached(cmd);
+  ExternalProcess::launch(cmd);
+  //QProcess::startDetached(cmd);
 }
 
 QFileInfoList LSession::DesktopFiles(){

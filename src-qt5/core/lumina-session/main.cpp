@@ -24,10 +24,13 @@
 
 int main(int argc, char ** argv)
 {
+    bool unified = false;
     if (argc > 1) {
       if (QString(argv[1]) == QString("--version")){
         qDebug() << LDesktopUtils::LuminaDesktopVersion();
         return 0;
+      }else if(QString(argv[1]) == QString("--unified")){
+        unified = true;
       }
     }
     if(!QFile::exists(LOS::LuminaShare())){
@@ -41,6 +44,7 @@ int main(int argc, char ** argv)
       //No X session found. Go ahead and re-init this binary within an xinit call
       QString prog = QString(argv[0]).section("/",-1);
       LUtils::isValidBinary(prog); //will adjust the path to be absolute
+      if(unified){ prog = prog+" --unified"; }
       QStringList args; args << prog;
       //if(LUtils::isValidBinary("x11vnc")){ args << "--" << "-listen" << "tcp"; } //need to be able to VNC into this session
       return QProcess::execute("xinit", args);
@@ -57,7 +61,9 @@ int main(int argc, char ** argv)
 
     //Check for any stale desktop lock files and clean them up
     QString cfile = QDir::tempPath()+"/.LSingleApp-%1-%2-%3";
-    cfile = cfile.arg( QString(getlogin()), "lumina-desktop", QString::number(QX11Info::appScreen()) );
+    QString desk = "lumina-desktop";
+    if(unified){ desk.append("-unified"); }
+    cfile = cfile.arg( QString(getlogin()), desk, QString::number(QX11Info::appScreen()) );
     if(QFile::exists(cfile)){
       qDebug() << "Found Desktop Lock for X session:" << disp;
       qDebug() << " - Disabling Lock and starting new desktop session";
@@ -78,7 +84,7 @@ int main(int argc, char ** argv)
     //Startup the session
     QCoreApplication a(argc, argv);
     LSession sess;
-      sess.start();
+      sess.start(unified);
     int retCode = a.exec();
     qDebug() << "Finished Closing Down Lumina";
     return retCode;

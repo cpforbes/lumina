@@ -305,7 +305,13 @@ sed -i "s:/usr/local/share/applications/thunderbird.desktop:thunderbird:g" %{bui
 %{_datadir}/applications/lumina-archiver.desktop
 
 %changelog
-* Tue Nov 22 2016 Craig Forbes <cforbes@gmail.com> - 1.1.0-p1
+* Wed Jan  4 2017 Craig Forbes <cforbes@trustwave.com> - 1.2.0-1
+- Updated to 1.2.0
+- Removed devel and libs sub-packages
+- Added lumina-archiver
+- Fix qmake flags to work with gcc 6 (Fedora 25)
+
+* Tue Nov 22 2016 Craig Forbes <cforbes@gmail.com> - 1.1.0.p1-1
 - Updated to 1.1.0-p1
 
 * Wed Dec 23 2015 Neal Gompa <ngompa13@gmail.com>

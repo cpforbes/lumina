@@ -129,7 +129,12 @@
         <translation>Andere</translation>
     </message>
     <message>
-        <location filename="../LFileDialog.cpp" line="274"/>
+        <location filename="../LFileDialog.cpp" line="211"/>
+        <source>[default] </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../LFileDialog.cpp" line="278"/>
         <source>Find Application Binary</source>
         <translation>Ausführbare Anwendung finden</translation>
     </message>
@@ -161,7 +166,7 @@
     <message>
         <location filename="../main.cpp" line="264"/>
         <source>Application entry is invalid: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Anwendungseintrag ist ungültig: %1</translation>
     </message>
     <message>
         <location filename="../main.cpp" line="273"/>
@@ -169,37 +174,37 @@
         <translation>Fehlende Startup-Informationen für Programm-Verknüpfung (deformierte Verknüpfung): %1</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="284"/>
+        <location filename="../main.cpp" line="286"/>
         <source>URL shortcut is missing the URL: %1</source>
-        <translation>fehlende URL für URL: %1</translation>
+        <translation>URL-Verknüpfung fehlt die URL: %1</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="295"/>
+        <location filename="../main.cpp" line="297"/>
         <source>Directory shortcut is missing the path to the directory: %1</source>
-        <translation>fehlender Pfad zum Verzeichnis der Verknüpfung: %1</translation>
+        <translation>Verzeichnisverknüpfung fehlt der Pfad zum Verzeichnis: %1</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="300"/>
+        <location filename="../main.cpp" line="302"/>
         <source>Unknown type of shortcut : %1</source>
-        <translation>unbekannter Typ für Vernüpfung: %1</translation>
+        <translation>Unbekannter Typ für Vernüpfung: %1</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="363"/>
+        <location filename="../main.cpp" line="365"/>
         <source>Binary Missing</source>
         <translation>Binärdatei fehlt</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="363"/>
+        <location filename="../main.cpp" line="365"/>
         <source>Could not find &quot;%1&quot;. Please ensure it is installed first.</source>
         <translation>Konnte &quot;%1&quot; nicht finden. Bitte stellen Sie zuerst sicher, dass es installiert ist.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="413"/>
+        <location filename="../main.cpp" line="415"/>
         <source>Application Error</source>
         <translation>Anwendungsfehler</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="413"/>
+        <location filename="../main.cpp" line="415"/>
         <source>The following application experienced an error and needed to close:</source>
         <translation>Bei folgender Anwendung ist ein Fehler aufgetreten und sie wurde beendet:</translation>
     </message>
