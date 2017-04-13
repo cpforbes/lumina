@@ -1,6 +1,6 @@
 //===========================================
 //  Lumina-DE source code
-//  Copyright (c) 2015, Ken Moore
+//  Copyright (c) 2015-2017, Ken Moore
 //  Available under the 3-clause BSD license
 //  See the LICENSE file for full details
 //===========================================
@@ -12,9 +12,11 @@
 #include <QSettings>
 #include <QShortcut>
 #include <QFontComboBox>
+#include <QSpinBox>
 
 #include "PlainTextEditor.h"
 #include "ColorDialog.h"
+#include "DnDTabBar.h"
 
 namespace Ui{
 	class MainUI;
@@ -26,17 +28,18 @@ public:
 	MainUI();
 	~MainUI();
 
-	void LoadArguments(QStringList args); //CLI arguments
-
 public slots:
+	void LoadArguments(QStringList args); //CLI arguments
 	void updateIcons();
 
 private:
 	Ui::MainUI *ui;
+	DnDTabWidget *tabWidget;
 	QFontComboBox *fontbox;
 	ColorDialog *colorDLG;
 	QSettings *settings;
 	QShortcut *closeFindS;
+	QSpinBox *fontSizes;
 
 	//Simplification functions
 	PlainTextEditor* currentEditor();
@@ -51,6 +54,8 @@ private slots:
 	void SaveFileAs();
 	void fontChanged(const QFont &font);
 	void updateStatusTip();
+	void changeFontSize(int newFontSize);
+	void changeTabsLocation(QAction*);
 
 	//Other Menu Actions
 	void UpdateHighlighting(QAction *act = 0);
@@ -63,6 +68,8 @@ private slots:
 	void updateTab(QString);
 	void tabChanged();
 	void tabClosed(int);
+	void tabDetached(int);
+	void tabDraggedOut(int, Qt::DropAction);
 
 	//Find/Replace functions
 	void closeFindReplace();
