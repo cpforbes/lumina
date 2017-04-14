@@ -178,7 +178,7 @@ This package provides lumina-archiver
 %endif
 
 %build
-%qmake_qt5 QMAKE_CFLAGS_ISYSTEM= CONFIG+="configure" CONFIG+="WITH_I18N" PREFIX="%{_prefix}" LIBPREFIX="%{_libdir}" QT5LIBDIR="%{_qt5_prefix}" L_LIBDIR=%{_libdir}
+%qmake_qt5 QMAKE_CFLAGS_ISYSTEM= CONFIG+="configure" CONFIG+="WITH_I18N" PREFIX="%{_prefix}" LIBPREFIX="%{_libdir}" QT5LIBDIR="%{_qt5_prefix}" L_LIBDIR=%{_libdir} L_MANDIR=%{_mandir}
 make %{?_smp_mflags}
 
 %install
@@ -199,6 +199,8 @@ sed -i "s:/usr/local/share/applications/thunderbird.desktop:thunderbird:g" %{bui
 %{_bindir}/lumina-desktop
 %{_bindir}/start-lumina-desktop
 %config(noreplace) %{_sysconfdir}/luminaDesktop.conf
+%{_mandir}/man8/lumina-desktop.8.gz
+%{_mandir}/man8/start-lumina-desktop.8.gz
 %{_sysconfdir}/luminaDesktop.conf.dist
 %{_datadir}/pixmaps/Lumina-DE.png
 %{_datadir}/xsessions/Lumina-DE.desktop
@@ -219,6 +221,7 @@ sed -i "s:/usr/local/share/applications/thunderbird.desktop:thunderbird:g" %{bui
 %{_datadir}/lumina-desktop/themes/Lumina-default.qss.template
 %{_datadir}/lumina-desktop/themes/None.qss.template
 %{_datadir}/lumina-desktop/themes/Glass.qss.template
+%{_datadir}/lumina-desktop/themes/DarkGlass.qss.template
 %{_datadir}/lumina-desktop/colors/Blue-Light.qss.colors
 %{_datadir}/lumina-desktop/colors/Grey-Dark.qss.colors
 %{_datadir}/lumina-desktop/colors/Solarized-Dark.qss.colors
@@ -235,11 +238,14 @@ sed -i "s:/usr/local/share/applications/thunderbird.desktop:thunderbird:g" %{bui
 %{_datadir}/lumina-desktop/i18n/lumina-desktop*.qm
 %{_datadir}/lumina-desktop/menu-scripts/ls.json.sh
 %{_datadir}/lumina-desktop/globs2
+%{_datadir}/icons/material-design-dark
+%{_datadir}/icons/material-design-light
 
 %files -n lumina-open
 %license LICENSE
 %{_bindir}/lumina-open
 %{_datadir}/lumina-desktop/i18n/lumina-open*.qm
+%{_mandir}/man1/lumina-open.1.gz
 
 %files -n lumina-config
 %license LICENSE
