@@ -13,6 +13,7 @@
 #include <QStringList>
 #include <QSystemTrayIcon>
 #include <QCloseEvent>
+#include <QSettings>
 
 //QMultimedia classes
 #include <QMediaPlayer>
@@ -40,7 +41,8 @@ private:
 	QVideoWidget *VIDEO;
 	QMediaPlaylist *PLAYLIST;
 	QSystemTrayIcon *SYSTRAY;
-	bool closing;
+	bool closing, DISABLE_VIDEO;
+	QSettings *SETTINGS;
 
 	void setupPlayer();
 	void setupPandora();
@@ -52,6 +54,7 @@ private:
 private slots:
 	void closeApplication();
 	void PlayerTypeChanged(bool active = true);
+	void PlayerSettingsChanged();
 
 	//Toolbar actions
 	void playToggled();
@@ -66,6 +69,8 @@ private slots:
 	void setLocalPosition(int pos){ PLAYER->setPosition(pos); }
 	void addLocalMedia();
 	void rmLocalMedia();
+	void upLocalMedia();
+	void downLocalMedia();
 	void localPlaybackSettingsChanged();
 
 	//Local Playlist Feedback
@@ -92,6 +97,8 @@ private slots:
 	void changePandoraStation(QString);
 	void checkPandoraSettings();
 	void applyPandoraSettings();
+	void createPandoraStation();
+
 	//Pandora Process Feedback
 	void PandoraStateChanged(PianoBarProcess::State);
 	void NewPandoraInfo(QString);
@@ -99,7 +106,8 @@ private slots:
 	void PandoraSongChanged(bool, QString, QString, QString, QString, QString); //[isLoved, title, artist, album, detailsURL, fromStation]
 	void PandoraTimeUpdate(int,int); //current secs, total secs
 	void PandoraStationListChanged(QStringList);
-	void PandoraListInfo(QStringList);
+	void PandoraInteractivePrompt(QString, QStringList);
+	void PandoraError(QString);
 
 	//System Tray interactions
 	void toggleVisibility();
