@@ -28,6 +28,8 @@ Source0:  https://github.com/trueos/lumina/archive/%{commit0}.tar.gz#/lumina-%{s
 Source0:            https://github.com/trueos/lumina/archive/v%{release_version}.tar.gz#/lumina-%{release_version}.tar.gz
 %endif
 
+Patch1: lumina-qt56.patch
+
 # Exclude IBM ESA/390 and ESA System/z architectures
 ExcludeArch:        s390 s390x
 
@@ -170,12 +172,28 @@ Group:              User Interface/Desktops
 %description -n lumina-archiver
 This package provides lumina-archiver
 
+%package -n lumina-mediaplayer
+Summary:            Media Player for Lumina Desktop
+Group:              User Interface/Desktops
+
+%description -n lumina-mediaplayer
+This package provides lumina-mediaplayer
+
+%package -n lumina-xdg-entry
+Summary:            xdg entry editor for Lumina Desktop
+Group:              User Interface/Desktops
+
+%description -n lumina-xdg-entry
+This package provides lumina-xdg-entry
+
 %prep
 %if %{defined git_build}
 %setup -n lumina-%{commit0}
 %else
 %setup -q -n lumina-%{release_version}
 %endif
+
+%patch1 -p1 -b .qt6
 
 %build
 %qmake_qt5 QMAKE_CFLAGS_ISYSTEM= CONFIG+="configure" CONFIG+="WITH_I18N" PREFIX="%{_prefix}" LIBPREFIX="%{_libdir}" QT5LIBDIR="%{_qt5_prefix}" L_LIBDIR=%{_libdir} L_MANDIR=%{_mandir}
@@ -309,6 +327,17 @@ sed -i "s:/usr/local/share/applications/thunderbird.desktop:thunderbird:g" %{bui
 %{_bindir}/lumina-archiver
 %{_datadir}/lumina-desktop/i18n/l-archiver_*.qm
 %{_datadir}/applications/lumina-archiver.desktop
+
+%files -n lumina-mediaplayer
+%license LICENSE
+%{_bindir}/lumina-mediaplayer
+%{_datadir}/lumina-desktop/i18n/l-mediap_*.qm
+%{_datadir}/applications/lumina-mediaplayer.desktop
+
+%files -n lumina-xdg-entry
+%license LICENSE
+%{_bindir}/lumina-xdg-entry
+%{_datadir}/applications/lumina-xdg-entry.desktop
 
 %changelog
 * Wed Jan  4 2017 Craig Forbes <cforbes@trustwave.com> - 1.2.0-1
