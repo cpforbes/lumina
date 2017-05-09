@@ -1,18 +1,20 @@
-# Enable hardened build by default
-%global _hardened_build 1
+%global srcname       lumina
+%global srcurl        https://github.com/trueos/%{srcname}
 
 %{!?rel: %global rel 1}
 
 %if %{defined git_build}
 %global commit0 %{git_build}
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
-%define rpm_version 1.2.1
+%define release_version 1.2.1
 %global relver %{rel}.%{shortcommit0}
 %else
 %define release_version 1.2.0
-%define rpm_version %(echo %{release_version} | tr - .)
 %global relver %{rel}
 %endif
+
+%define rpm_version %(echo %{release_version} | tr - .)
+
 Summary:            A lightweight, portable desktop environment
 Name:               lumina-desktop
 Version:            %{rpm_version}
@@ -23,12 +25,10 @@ URL:                http://lumina-desktop.org
 
 # Formatted so spectool can fetch the source.
 %if %{defined git_build}
-Source0:  https://github.com/trueos/lumina/archive/%{commit0}.tar.gz#/lumina-%{shortcommit0}.tar.gz
+Source0:            %{srcurl}/archive/%{commit0}.tar.gz#/lumina-%{shortcommit0}.tar.gz
 %else
-Source0:            https://github.com/trueos/lumina/archive/v%{release_version}.tar.gz#/lumina-%{release_version}.tar.gz
+Source0:            %{srcurl}/archive/v%{release_version}.tar.gz#/lumina-%{release_version}.tar.gz
 %endif
-
-Patch1: lumina-qt56.patch
 
 # Exclude IBM ESA/390 and ESA System/z architectures
 ExcludeArch:        s390 s390x
@@ -37,37 +37,87 @@ ExcludeArch:        s390 s390x
 BuildRequires:      gcc, gcc-c++
 
 # Qt requirements
-BuildRequires:      qt5-qttools, qt5-qttools-devel, qt5-linguist
-BuildRequires:      qt5-qtbase-devel, qt5-qtmultimedia-devel, qt5-qtdeclarative-devel
-BuildRequires:      qt5-qtsvg-devel, qt5-qtx11extras-devel
+BuildRequires:      qt5-qttools
+BuildRequires:      qt5-qttools-devel
+BuildRequires:      qt5-linguist
+BuildRequires:      qt5-qtbase-devel
+BuildRequires:      qt5-qtmultimedia-devel
+BuildRequires:      qt5-qtdeclarative-devel
+BuildRequires:      qt5-qtsvg-devel
+BuildRequires:      qt5-qtx11extras-devel
 
 # X component requirements
-BuildRequires:      xcb-util-image, xcb-util-image-devel, xcb-util-wm-devel, libxcb-devel, xcb-util-devel
-BuildRequires:      libXcomposite-devel, libXdamage-devel, libXrender-devel
+BuildRequires:      xcb-util-image
+BuildRequires:      xcb-util-image-devel
+BuildRequires:      xcb-util-wm-devel
+BuildRequires:      libxcb-devel
+BuildRequires:      xcb-util-devel
+BuildRequires:      libXcomposite-devel
+BuildRequires:      libXdamage-devel
+BuildRequires:      libXrender-devel
 
 # Runtime requirements
-Requires:           alsa-utils, acpi, numlockx, pavucontrol, sysstat
-Requires:           xscreensaver, xbacklight, xterm
-Requires:           qt5-style-oxygen, plasma-oxygen 
+Requires:           alsa-utils
+Requires:           acpi
+Requires:           numlockx
+Requires:           pavucontrol
+Requires:           sysstat
+Requires:           xscreensaver
+Requires:           xbacklight
+Requires:           xterm
+Requires:           qt5-style-oxygen
+Requires:           plasma-oxygen 
 Requires:           fluxbox
 
 # Desktop requirements
-Requires:           lumina-open = %{version}-%{release}
-Requires:           lumina-config = %{version}-%{release}
-Requires:           lumina-fm = %{version}-%{release}
-Requires:           lumina-screenshot = %{version}-%{release}
-Requires:           lumina-search = %{version}-%{release}
-Requires:           lumina-info = %{version}-%{release}
-Requires:           lumina-xconfig = %{version}-%{release}
-Requires:           lumina-fileinfo = %{version}-%{release}
-Requires:           lumina-textedit = %{version}-%{release}
-Requires:           lumina-calculator = %{version}-%{release}
-Requires:           lumina-archiver = %{version}-%{release}
+Requires:             %{name}-filesystem = %{version}-%{release}
+Requires:             %{name}-data = %{version}-%{release}
 
+# Fix for rhbz#1389486, unable to start applications in Lumina
+Requires:             %{srcname}-open%{?_isa} = %{version}-%{release}
+
+%if 0%{?fedora}
+Suggests:           lumina-open = %{version}-%{release}
+Suggests:           lumina-config = %{version}-%{release}
+Suggests:           lumina-fm = %{version}-%{release}
+Suggests:           lumina-screenshot = %{version}-%{release}
+Suggests:           lumina-search = %{version}-%{release}
+Suggests:           lumina-info = %{version}-%{release}
+Suggests:           lumina-xconfig = %{version}-%{release}
+Suggests:           lumina-fileinfo = %{version}-%{release}
+Suggests:           lumina-textedit = %{version}-%{release}
+Suggests:           lumina-calculator = %{version}-%{release}
+Suggests:           lumina-archiver = %{version}-%{release}
+%endif
 
 %description
 The Lumina Desktop Environment is a lightweight system interface
 that is designed for use on any Unix-like operating system.
+
+%package data
+Summary:              Data for Lumina Desktop
+BuildArch:            noarch
+Requires:             %{name} = %{version}-%{release}
+
+%description data
+This package provides the data files for the Lumina Desktop
+Environment: Colors, desktop background, theme templates.
+
+%package filesystem
+Summary:              Common folders for Lumina Desktop
+BuildArch:            noarch
+Obsoletes:            %{name}-libs < 1.2.0
+
+%description filesystem
+This package provides the common folders for the Lumina Desktop Environment.
+
+%package wallpapers
+Summary:              Wallpapers for Lumina Desktop
+BuildArch:            noarch
+Requires:             kde-filesystem
+
+%description wallpapers
+Optional wallpapers recommended for Lumina Desktop.
 
 %package -n lumina-open
 Summary:            xdg-open style utility for Lumina Desktop
@@ -188,16 +238,31 @@ This package provides lumina-xdg-entry
 
 %prep
 %if %{defined git_build}
-%setup -n lumina-%{commit0}
+%setup -q -n lumina-%{commit0}
 %else
 %setup -q -n lumina-%{release_version}
 %endif
 
-%patch1 -p1 -b .qt6
-
 %build
-%qmake_qt5 QMAKE_CFLAGS_ISYSTEM= CONFIG+="configure" CONFIG+="WITH_I18N" PREFIX="%{_prefix}" LIBPREFIX="%{_libdir}" QT5LIBDIR="%{_qt5_prefix}" L_LIBDIR=%{_libdir} L_MANDIR=%{_mandir}
+%if %{defined git_build}
+git_version='DEFINES+=GIT_VERSION="\\\"%{shortcommit0}\\\""'
+%else
+git_version=''
+%endif
+echo %{?git_version}
+
+%qmake_qt5 $git_version \
+ QMAKE_CFLAGS_ISYSTEM= \
+ CONFIG+="configure" \
+ CONFIG+="WITH_I18N" \
+ PREFIX="%{_prefix}" \
+ LIBPREFIX="%{_libdir}" \
+ QT5LIBDIR="%{_qt5_prefix}" \
+ L_LIBDIR=%{_libdir} \
+ L_MANDIR=%{_mandir}
+
 make %{?_smp_mflags}
+
 
 %install
 # Install the desktop
@@ -219,32 +284,49 @@ sed -i "s:/usr/local/share/applications/thunderbird.desktop:thunderbird:g" %{bui
 %config(noreplace) %{_sysconfdir}/luminaDesktop.conf
 %{_mandir}/man8/lumina-desktop.8.gz
 %{_mandir}/man8/start-lumina-desktop.8.gz
+%{_datadir}/%{name}/i18n/lumina-desktop*.qm
 %{_sysconfdir}/luminaDesktop.conf.dist
 %{_datadir}/pixmaps/Lumina-DE.png
 %{_datadir}/xsessions/Lumina-DE.desktop
-%{_datadir}/lumina-desktop/desktop-background.jpg
-%{_datadir}/lumina-desktop/luminaDesktop.conf
-%{_datadir}/lumina-desktop/compton.conf
-%{_datadir}/lumina-desktop/fluxbox-init-rc
-%{_datadir}/lumina-desktop/fluxbox-keys
-%{_datadir}/lumina-desktop/Login.ogg
-%{_datadir}/lumina-desktop/Logout.ogg
-%{_datadir}/lumina-desktop/low-battery.ogg
-%{_datadir}/lumina-desktop/colors/Lumina-Red.qss.colors
-%{_datadir}/lumina-desktop/colors/Lumina-Green.qss.colors
-%{_datadir}/lumina-desktop/colors/Lumina-Purple.qss.colors
-%{_datadir}/lumina-desktop/colors/Lumina-Gold.qss.colors
-%{_datadir}/lumina-desktop/colors/Lumina-Glass.qss.colors
-%{_datadir}/lumina-desktop/colors/PCBSD10-Default.qss.colors
-%{_datadir}/lumina-desktop/themes/Lumina-default.qss.template
-%{_datadir}/lumina-desktop/themes/None.qss.template
-%{_datadir}/lumina-desktop/themes/Glass.qss.template
-%{_datadir}/lumina-desktop/themes/DarkGlass.qss.template
-%{_datadir}/lumina-desktop/colors/Blue-Light.qss.colors
-%{_datadir}/lumina-desktop/colors/Grey-Dark.qss.colors
-%{_datadir}/lumina-desktop/colors/Solarized-Dark.qss.colors
-%{_datadir}/lumina-desktop/colors/Solarized-Light.qss.colors
-%{_datadir}/lumina-desktop/colors/Black.qss.colors
+%{_datadir}/icons/material-design-dark
+%{_datadir}/icons/material-design-light
+
+%files data
+%{_datadir}/%{name}/desktop-background.jpg
+%{_datadir}/%{name}/luminaDesktop.conf
+%{_datadir}/%{name}/compton.conf
+%{_datadir}/%{name}/fluxbox-init-rc
+%{_datadir}/%{name}/fluxbox-keys
+%{_datadir}/%{name}/Login.ogg
+%{_datadir}/%{name}/Logout.ogg
+%{_datadir}/%{name}/low-battery.ogg
+%{_datadir}/%{name}/colors/Lumina-Red.qss.colors
+%{_datadir}/%{name}/colors/Lumina-Green.qss.colors
+%{_datadir}/%{name}/colors/Lumina-Purple.qss.colors
+%{_datadir}/%{name}/colors/Lumina-Gold.qss.colors
+%{_datadir}/%{name}/colors/Lumina-Glass.qss.colors
+%{_datadir}/%{name}/colors/PCBSD10-Default.qss.colors
+%{_datadir}/%{name}/themes/Lumina-default.qss.template
+%{_datadir}/%{name}/themes/None.qss.template
+%{_datadir}/%{name}/themes/Glass.qss.template
+%{_datadir}/%{name}/themes/DarkGlass.qss.template
+%{_datadir}/%{name}/colors/Blue-Light.qss.colors
+%{_datadir}/%{name}/colors/Grey-Dark.qss.colors
+%{_datadir}/%{name}/colors/Solarized-Dark.qss.colors
+%{_datadir}/%{name}/colors/Solarized-Light.qss.colors
+%{_datadir}/%{name}/colors/Black.qss.colors
+%{_datadir}/%{name}/menu-scripts/ls.json.sh
+%{_datadir}/%{name}/globs2
+%exclude %{_datadir}/%{name}/i18n
+
+%files filesystem
+%license LICENSE
+# each binary expects its locale files in the common folder
+%dir %{_datadir}/%{name}
+%dir %{_datadir}/%{name}/i18n
+
+%files wallpapers
+%license LICENSE
 %{_datadir}/wallpapers/Lumina-DE/Lumina_Wispy_blue-grey-zoom.jpg
 %{_datadir}/wallpapers/Lumina-DE/Lumina_Wispy_blue-grey.jpg
 %{_datadir}/wallpapers/Lumina-DE/Lumina_Wispy_gold.jpg
@@ -253,11 +335,6 @@ sed -i "s:/usr/local/share/applications/thunderbird.desktop:thunderbird:g" %{bui
 %{_datadir}/wallpapers/Lumina-DE/Lumina_Wispy_grey-blue.jpg
 %{_datadir}/wallpapers/Lumina-DE/Lumina_Wispy_purple.jpg
 %{_datadir}/wallpapers/Lumina-DE/Lumina_Wispy_red.jpg
-%{_datadir}/lumina-desktop/i18n/lumina-desktop*.qm
-%{_datadir}/lumina-desktop/menu-scripts/ls.json.sh
-%{_datadir}/lumina-desktop/globs2
-%{_datadir}/icons/material-design-dark
-%{_datadir}/icons/material-design-light
 
 %files -n lumina-open
 %license LICENSE
