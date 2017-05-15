@@ -1,9 +1,9 @@
 # Created by: Ken Moore <ken@pcbsd.org>
 # $FreeBSD$
 
-PORTNAME=	lumina
+PORTNAME=	lumina-core
 PORTVERSION=	%%CHGVERSION%%
-PORTEPOCH=	2
+PORTREVISION=	%%CHGREVISION%%
 CATEGORIES=	x11
 
 MAINTAINER=	kmoore@FreeBSD.org
@@ -23,7 +23,7 @@ LIB_DEPENDS+=	libxcb-ewmh.so:x11/xcb-util-wm \
 		libxcb-image.so:x11/xcb-util-image \
 		libxcb-util.so:x11/xcb-util
 
-CONFLICTS=	lumina-devel-0*
+CONFLICTS=	lumina-1.2.1
 
 OPTIONS_DEFINE=	MULTIMEDIA TRUEOS I18N
 OPTIONS_DEFAULT=	MULTIMEDIA I18N
@@ -47,7 +47,9 @@ USE_QT5=	core gui widgets network svg multimedia imageformats \
 USES=		desktop-file-utils qmake
 USE_GITHUB=	yes
 GH_ACCOUNT=	trueos
+GH_PROJECT=	lumina
 GH_TAGNAME=	%%GHTAG%%
+WRKSRC_SUBDIR=	src-qt5/core
 
 #Setup the qmake configuration options
 .if ${PORT_OPTIONS:MTRUEOS}
