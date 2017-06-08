@@ -12,6 +12,7 @@
 #include "gitCompat.h"
 #include "gitWizard.h"
 
+#include <LUtils.h>
 #include <LDesktopUtils.h>
 
 #define DEBUG 0
@@ -27,7 +28,7 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI){
 	
   ui->setupUi(this);
   if(DEBUG){ qDebug() << "Initilization:"; }
-  settings = new QSettings( QSettings::UserScope, "lumina-desktop", "lumina-fm", this);
+  settings = LUtils::openSettings("lumina-desktop", "lumina-fm", this);
 
   //Reset the UI to the previously used size (if possible)
 QSize orig = settings->value("preferences/MainWindowSize", QSize()).toSize();
@@ -179,6 +180,7 @@ void MainUI::OpenDirs(QStringList dirs){
     DW->setShowDetails(radio_view_details->isChecked()); 
     DW->setThumbnailSize(settings->value("iconsize", 32).toInt());
     DW->showHidden( ui->actionView_Hidden_Files->isChecked() );
+    DW->showThumbnails( ui->actionShow_Thumbnails->isChecked() );
     //Now load the directory
     DW->ChangeDir(dirs[i]); //kick off loading the directory info
   }
@@ -193,6 +195,7 @@ void MainUI::OpenDirs(QStringList dirs){
   if(DWLIST.isEmpty()){ OpenDirs(QStringList()); }
   waitingToClose = false;
   ui->menuGit->setEnabled( GIT::isAvailable() );
+  this->showNormal(); //single-instance check - make sure the window is raised again if it was minimized
 }
 
 void MainUI::setupIcons(){
@@ -270,19 +273,20 @@ void MainUI::togglehiddenfiles()
 void MainUI::loadSettings(){
   //Note: make sure this is run after all the UI elements are created and connected to slots
   // but before the first directory gets loaded
-  QSettings SET("lumina-desktop","lumina-fm");
-  ui->actionView_Hidden_Files->setChecked( SET.value("showhidden", false).toBool() );
+  ui->actionView_Hidden_Files->setChecked( settings->value("showhidden", false).toBool() );
     on_actionView_Hidden_Files_triggered(); //make sure to update the models too
+  ui->actionShow_Thumbnails->setChecked( settings->value("showthumbnails",true).toBool());
+    on_actionShow_Thumbnails_triggered(); //make sure to update models too
   //ui->actionShow_Action_Buttons->setChecked(settings->value("showactions", true).toBool() );
     //on_actionShow_Action_Buttons_triggered(); //make sure to update the UI
   //ui->actionShow_Thumbnails->setChecked( settings->value("showthumbnails", true).toBool() );
   //View Type
-  //qDebug() << "View Mode:" << SET.value("viewmode","details").toString();
-  bool showDetails = (SET.value("viewmode","details").toString()=="details");
+  //qDebug() << "View Mode:" << settings->value("viewmode","details").toString();
+  bool showDetails = (settings->value("viewmode","details").toString()=="details");
   if(showDetails){ radio_view_details->setChecked(true); }
   else{ radio_view_list->setChecked(true); }
   //Grouping type
-  //bool usetabs = (SET.value("groupmode","tabs").toString()=="tabs");
+  //bool usetabs = (settings->value("groupmode","tabs").toString()=="tabs");
   //if(usetabs){ radio_view_tabs->setChecked(true); }
  // else{ radio_view_cols->setChecked(true); }
   
@@ -290,8 +294,7 @@ void MainUI::loadSettings(){
 
 void MainUI::RebuildBookmarksMenu(){
   //Create the bookmarks menu
-  QSettings SET("lumina-desktop","lumina-fm");
-  QStringList BM = SET.value("bookmarks", QStringList()).toStringList();
+  QStringList BM = settings->value("bookmarks", QStringList()).toStringList();
   ui->menuBookmarks->clear();
     ui->menuBookmarks->addAction(ui->actionManage_Bookmarks);
     ui->menuBookmarks->addAction(ui->actionAdd_Bookmark);
@@ -311,7 +314,7 @@ void MainUI::RebuildBookmarksMenu(){
       changed = true;
     }*/
   }
-  if(changed){ SET.setValue("bookmarks",BM); }
+  if(changed){ settings->setValue("bookmarks",BM); }
   ui->actionManage_Bookmarks->setEnabled(BM.length()>0);
 }
 
@@ -479,12 +482,12 @@ void MainUI::on_actionView_Hidden_Files_triggered(){
   //for(int i=0; i<DWLIST.length(); i++){ DWLIST[i]->setShowSidebar(show); }
 }*/
 
-/*void MainUI::on_actionShow_Thumbnails_triggered(){
+void MainUI::on_actionShow_Thumbnails_triggered(){
   //Now save this setting for later
   bool show = ui->actionShow_Thumbnails->isChecked();
   settings->setValue("showthumbnails", show);
-  //for(int i=0; i<DWLIST.length(); i++){ DWLIST[i]->setShowThumbnails(show); }
-}*/
+  for(int i=0; i<DWLIST.length(); i++){ DWLIST[i]->showThumbnails(show); }
+}
 
 void MainUI::goToBookmark(QAction *act){
   if(act==ui->actionManage_Bookmarks){
@@ -523,9 +526,8 @@ void MainUI::goToDevice(QAction *act){
 void MainUI::viewModeChanged(bool active){
   if(!active){ return; } //on every view change, all radio buttons will call this function - only run this once though
   bool showDetails = radio_view_details->isChecked();
-  QSettings SET("lumina-desktop","lumina-fm");
-  if(showDetails){ SET.setValue("viewmode","details"); }
-  else{ SET.setValue("viewmode","list"); }
+  if(showDetails){ settings->setValue("viewmode","details"); }
+  else{ settings->setValue("viewmode","list"); }
 
   //Re-load the view widgets
   for(int i=0; i<DWLIST.length(); i++){

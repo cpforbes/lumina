@@ -17,6 +17,7 @@
 #include <LuminaX11.h>
 #include <LUtils.h>
 #include <ExternalProcess.h>
+#include <LIconCache.h>
 
 #include <unistd.h> //for usleep() usage
 
@@ -25,6 +26,7 @@
 #endif
 
 XCBEventFilter *evFilter = 0;
+LIconCache *ICONS = 0;
 
 LSession::LSession(int &argc, char ** argv) : LSingleApplication(argc, argv, "lumina-desktop"){
  if(this->isPrimaryProcess()){
@@ -47,6 +49,7 @@ LSession::LSession(int &argc, char ** argv) : LSingleApplication(argc, argv, "lu
   lastActiveWin = 0; 
   cleansession = true;
   TrayStopping = false;
+  ICONS = new LIconCache(this);
   screenTimer = new QTimer(this);
     screenTimer->setSingleShot(true);
     screenTimer->setInterval(50);
@@ -686,6 +689,15 @@ void LSession::WindowPropertyEvent(WId win){
   //Emit the single-app signal if the window in question is one used by the task manager
   if(RunningApps.contains(win)){
     if(DEBUG){ qDebug() << "Single-window property event"; }
+    /*if( XCB->WindowClass(win).contains("VirtualBox")){
+      qDebug() << "Found VirtualBox Window:";
+      QList<LXCB::WINDOWSTATE> states = XCB->WM_Get_Window_States(win);
+      if(states.contains(LXCB::S_FULLSCREEN) && !states.contains(LXCB::S_HIDDEN)){
+       qDebug() << "Adjusting VirtualBox Window (fullscreen)";
+        XCB->WM_Set_Window_Type(win, QList<LXCB::WINDOWTYPE>() << LXCB::T_NORMAL << LXCB::T_UTILITY );
+        XCB->RestoreWindow(win);
+      }
+    }*/
     //emit WindowListEvent();
     WindowPropertyEvent(); //Run through the entire routine for window checks
   }else if(RunningTrayApps.contains(win)){

@@ -59,7 +59,7 @@ MainUI::MainUI()
   connect(scaleTimer, SIGNAL(timeout()), this, SLOT(imgScalingChanged()) );
   connect(tabbar, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)) );
   connect(ui->check_show_popups, SIGNAL(toggled(bool)), this, SLOT(showPopupsChanged(bool)) );
-  settings = new QSettings("lumina-desktop", "lumina-screenshot",this);
+  settings = LUtils::openSettings("lumina-desktop", "lumina-screenshot",this);
   QString opt = settings->value("screenshot-target", "window").toString();
   if( opt == "window") {ui->radio_window->setChecked(true); }
   else if(opt=="area"){ ui->radio_area->setChecked(true); }
@@ -72,6 +72,13 @@ MainUI::MainUI()
   IMG->setDefaultSize(ui->scrollArea->maximumViewportSize());
   IMG->LoadImage( QApplication::screens().at(0)->grabWindow(QApplication::desktop()->winId()).toImage() ); //initial screenshot
   lastScreenShot = QDateTime::currentDateTime();
+
+  // Shortcuts
+  quitShortcut = new QShortcut(Qt::CTRL + Qt::Key_Q, this);
+  connect(quitShortcut, SIGNAL(activated()), this, SLOT(on_quitShortcut_Triggered()) );
+  openShortcut = new QShortcut(Qt::CTRL + Qt::Key_O, this);
+  connect(openShortcut, SIGNAL(activated()), this, SLOT(quicksave()) );
+
   //ui->label_screenshot->setPixmap( cpic.scaled(ui->label_screenshot->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation) );
 }
 
@@ -329,4 +336,8 @@ void MainUI::closeEvent(QCloseEvent *ev){
     }
   }
   QMainWindow::closeEvent(ev);
+}
+
+void MainUI::on_quitShortcut_Triggered(){
+    QApplication::quit();
 }
