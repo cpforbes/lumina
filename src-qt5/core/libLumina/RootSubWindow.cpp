@@ -10,7 +10,7 @@
 #include <QVBoxLayout>
 #include <QVBoxLayout>
 
-#define WIN_BORDER 3 
+#define WIN_BORDER 5
 
 // === PUBLIC ===
 RootSubWindow::RootSubWindow(QWidget *root, NativeWindow *win) : QFrame(root){
@@ -24,6 +24,7 @@ RootSubWindow::RootSubWindow(QWidget *root, NativeWindow *win) : QFrame(root){
   LoadProperties( NativeWindow::allProperties() );
   //Hookup the signals/slots
   connect(WIN, SIGNAL(PropertiesChanged(QList<NativeWindow::Property>, QList<QVariant>)), this, SLOT(propertiesChanged(QList<NativeWindow::Property>, QList<QVariant>)));
+  WIN->addFrameWinID(this->winId());
 }
 
 RootSubWindow::~RootSubWindow(){
@@ -41,34 +42,34 @@ RootSubWindow::ModState RootSubWindow::getStateAtPoint(QPoint pt, bool setoffset
     //above the frame itself - need to figure out which quadrant it is in (8-directions)
     if(pt.y() < WIN_BORDER){
       //One of the top options
-      if(pt.x() < WIN_BORDER){ 
+      if(pt.x() < WIN_BORDER){
 	if(setoffset){ offset.setX(pt.x()); offset.setY(pt.y()); } //difference from top-left corner
 	return ResizeTopLeft;
-      }else if(pt.x() > (this->width()-WIN_BORDER)){ 
+      }else if(pt.x() > (this->width()-WIN_BORDER)){
 	if(setoffset){ offset.setX(this->width()-pt.x()); offset.setY(pt.y()); } //difference from top-right corner
 	return ResizeTopRight;
-      }else{ 
+      }else{
 	if(setoffset){ offset.setX(0); offset.setY(pt.y()); } //difference from top edge (X does not matter)
-	return ResizeTop; 
-      }		    
+	return ResizeTop;
+      }
     }else if(pt.y() > (this->height()-WIN_BORDER) ){
       //One of the bottom options
-      if(pt.x() < WIN_BORDER){ 
+      if(pt.x() < WIN_BORDER){
 	if(setoffset){ offset.setX(pt.x()); offset.setY(this->height()-pt.y()); } //difference from bottom-left corner
 	return ResizeBottomLeft;
-      }else if(pt.x() > (this->width()-WIN_BORDER)){ 
+      }else if(pt.x() > (this->width()-WIN_BORDER)){
 	if(setoffset){ offset.setX(this->width()-pt.x()); offset.setY(this->height()-pt.y()); } //difference from bottom-right corner
 	return ResizeBottomRight;
-      }else{ 
+      }else{
 	if(setoffset){ offset.setX(0); offset.setY(this->height() - pt.y()); } //difference from bottom edge (X does not matter)
-	return ResizeBottom; 
-      }	
+	return ResizeBottom;
+      }
     }else{
       //One of the side options
-      if(pt.x() < WIN_BORDER){ 
+      if(pt.x() < WIN_BORDER){
 	if(setoffset){ offset.setX(pt.x()); offset.setY(0); } //difference from left edge (Y does not matter)
 	return ResizeLeft;
-      }else if(pt.x() > (this->width()-WIN_BORDER) ){ 
+      }else if(pt.x() > (this->width()-WIN_BORDER) ){
 	if(setoffset){ offset.setX(this->width()-pt.x()); offset.setY(0); } //difference from right edge (Y does not matter)
 	return ResizeRight;
       }else{
@@ -112,7 +113,7 @@ void RootSubWindow::setMouseCursor(ModState state, bool override){
       break;
     case ResizeTopLeft:
       shape = Qt::SizeFDiagCursor;
-      break;	    
+      break;
   }
   if(override){
     QApplication::setOverrideCursor(QCursor(shape));
@@ -123,6 +124,7 @@ void RootSubWindow::setMouseCursor(ModState state, bool override){
 }
 
 void RootSubWindow::initWindowFrame(){
+  //qDebug() << "Create RootSubWindow Frame";
   mainLayout = new QVBoxLayout(this);
   titleBar = new QHBoxLayout(this);
  closeB = new QToolButton(this);
@@ -139,7 +141,6 @@ void RootSubWindow::initWindowFrame(){
   connect(maxB, SIGNAL(clicked()), this, SLOT(toggleMaximize()) );
   connect(minB, SIGNAL(clicked()), this, SLOT(toggleMinimize()) );
   //Now assemble the frame layout based on the current settings
-  this->setLayout(mainLayout);
     titleBar->addWidget(otherB);
     titleBar->addWidget(titleLabel);
     titleBar->addWidget(minB);
@@ -155,12 +156,14 @@ void RootSubWindow::initWindowFrame(){
     maxB->setObjectName("Button_Maximize");
     otherM->setObjectName("Menu_Actions");
     titleLabel->setObjectName("Label_Title");
-  this->setStyleSheet("QWidget#WindowFrame{background-color: darkblue;} QWidget#Label_Title{background-color: transparent; color: white; }");
+  this->setStyleSheet("QWidget#WindowFrame{background-color: rgba(0,0,0,125);} QWidget#Label_Title{background-color: transparent; color: white; }");
   //And adjust the margins
   mainLayout->setContentsMargins(WIN_BORDER,WIN_BORDER,WIN_BORDER,WIN_BORDER);
   mainLayout->setSpacing(0);
   titleBar->setSpacing(1);
   titleBar->setContentsMargins(0,0,0,0);
+  //this->setLayout(mainLayout);
+  //qDebug() << " - Done";
 }
 
 void RootSubWindow::LoadProperties( QList< NativeWindow::Property> list){
@@ -225,7 +228,7 @@ void RootSubWindow::startResizing(){
 void RootSubWindow::propertiesChanged(QList<NativeWindow::Property> props, QList<QVariant> vals){
   for(int i=0; i<props.length() && i<vals.length(); i++){
     if(vals[i].isNull()){ return; } //not the same as a default/empty value - the property has just not been set yet
-    //qDebug() << "Set Window Property:" << props[i] << vals[i];
+    qDebug() << "RootSubWindow: Property Changed:" << props[i] << vals[i];
     switch(props[i]){
 	case NativeWindow::Visible:
 		if(vals[i].toBool()){ this->show(); }
@@ -274,7 +277,7 @@ void RootSubWindow::mousePressEvent(QMouseEvent *ev){
     activeState = getStateAtPoint(ev->pos(), true); //also have it set the offset variable
   }
   setMouseCursor(activeState, true); //this one is an override cursor
-  
+
 }
 
 void RootSubWindow::mouseMoveEvent(QMouseEvent *ev){

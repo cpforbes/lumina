@@ -22,10 +22,10 @@ MainUI::MainUI() : QMainWindow(), ui(new Ui::MainUI){
   //qRegisterMetaType<QFileInfoList>("QFileInfoList");
   qRegisterMetaType< LFileInfoList >("LFileInfoList");
   //just to silence/fix some Qt connect warnings in QtConcurrent
-  //qRegisterMetaType< QVector<int> >("QVector<int>"); 
+  //qRegisterMetaType< QVector<int> >("QVector<int>");
   //qRegisterMetaType< QList<QPersistentModelIndex> >("QList<QPersistentModelIndex>");
   waitingToClose = false;
-	
+
   ui->setupUi(this);
   if(DEBUG){ qDebug() << "Initilization:"; }
   settings = LUtils::openSettings("lumina-desktop", "lumina-fm", this);
@@ -35,7 +35,7 @@ QSize orig = settings->value("preferences/MainWindowSize", QSize()).toSize();
   if(!orig.isEmpty() && orig.isValid()){
     //Make sure the old size is larger than the default size hint
     if(orig.width() < this->sizeHint().width()){ orig.setWidth(this->sizeHint().width()); }
-    if(orig.height() < this->sizeHint().height()){ orig.setHeight(this->sizeHint().height()); }    
+    if(orig.height() < this->sizeHint().height()){ orig.setHeight(this->sizeHint().height()); }
     //Also ensure the old size is smaller than the current screen size
     QSize screen = QApplication::desktop()->availableGeometry(this).size();
     if(orig.width() > screen.width()){ orig.setWidth(screen.width()); }
@@ -94,6 +94,7 @@ QSize orig = settings->value("preferences/MainWindowSize", QSize()).toSize();
   nextTabRShort = new QShortcut( QKeySequence(tr("Shift+Right")), this);
   togglehiddenfilesShort = new QShortcut( QKeySequence(tr("Ctrl+H")), this);
   focusDirWidgetShort = new QShortcut( QKeySequence(tr("Ctrl+L")), this);
+  //toggledirtreepaneShort = new QShortcut( QKeySequence(tr("Ctrl+P")), this);
 
   //Finish loading the interface
   workThread->start();
@@ -134,7 +135,7 @@ void MainUI::OpenDirs(QStringList dirs){
     if(DEBUG){ qDebug() << "Open Directory:" << dirs[i]; }
     ///Get a new Unique ID
     int id = 0;
-    for(int j=0; j<DWLIST.length(); j++){ 
+    for(int j=0; j<DWLIST.length(); j++){
       if(DWLIST[j]->id().section("-",1,1).toInt() >= id){ id = DWLIST[j]->id().section("-",1,1).toInt()+1; }
     }
     //Create the new DirWidget
@@ -157,7 +158,8 @@ void MainUI::OpenDirs(QStringList dirs){
     connect(DW, SIGNAL(PasteFiles(QString,QStringList)), this, SLOT(PasteFiles(QString, QStringList)) );
     connect(DW, SIGNAL(CloseBrowser(QString)), this, SLOT(CloseBrowser(QString)) );
     connect(DW, SIGNAL(TabNameChanged(QString,QString)), this, SLOT(TabNameChanged(QString, QString)) );
-    //Now create the tab for this 
+    connect(DW, SIGNAL(treeWidgetSizeChanged(float)), this, SLOT(treeWidgetWidthChanged(float)) );
+    //Now create the tab for this
     //if(radio_view_tabs->isChecked()){
       int index = tabBar->addTab( LXDG::findIcon("folder-open",""), dirs[i].section("/",-1) );
       tabBar->setTabWhatsThis( index, "DW-"+QString::number(id) );
@@ -175,12 +177,14 @@ void MainUI::OpenDirs(QStringList dirs){
         tabBar->setCurrentIndex(index);
       }
     }*/
-    
+
     //Initialize the widget with the proper settings
-    DW->setShowDetails(radio_view_details->isChecked()); 
+    DW->setShowDetails(radio_view_details->isChecked());
     DW->setThumbnailSize(settings->value("iconsize", 32).toInt());
     DW->showHidden( ui->actionView_Hidden_Files->isChecked() );
     DW->showThumbnails( ui->actionShow_Thumbnails->isChecked() );
+    //DW->showDirTreePane( ui->actionView_showDirTreePane->isChecked() );
+    DW->adjustTreeWidget( settings->value("dirTree_width", 25.0).toFloat() );
     //Now load the directory
     DW->ChangeDir(dirs[i]); //kick off loading the directory info
   }
@@ -200,7 +204,7 @@ void MainUI::OpenDirs(QStringList dirs){
 
 void MainUI::setupIcons(){
   this->setWindowIcon( LXDG::findIcon("Insight-FileManager","") );
-	
+
   //Setup all the icons using libLumina
   // File menu
   ui->actionNew_Window->setIcon( LXDG::findIcon("window-new","") );
@@ -254,6 +258,8 @@ void MainUI::setupConnections(){
   connect(nextTabRShort, SIGNAL(activated()), this, SLOT( nextTab() ) );
   connect(togglehiddenfilesShort, SIGNAL(activated()), this, SLOT( togglehiddenfiles() ) );
   connect(focusDirWidgetShort, SIGNAL(activated()), this, SLOT( focusDirWidget() ) );
+  //connect(toggledirtreepaneShort, SIGNAL(activated()), this, SLOT( toggleDirTreePane() ) );
+
 }
 
 void MainUI::focusDirWidget()
@@ -270,6 +276,14 @@ void MainUI::togglehiddenfiles()
     on_actionView_Hidden_Files_triggered();
 }
 
+/*void MainUI::toggleDirTreePane()
+{
+    //change setChecked to inverse value
+    ui->actionView_Hidden_Files->setChecked( !settings->value("showdirtree", true).toBool() );
+    // then trigger function
+    on_actionView_showDirTreePane_triggered();
+}*/
+
 void MainUI::loadSettings(){
   //Note: make sure this is run after all the UI elements are created and connected to slots
   // but before the first directory gets loaded
@@ -277,6 +291,9 @@ void MainUI::loadSettings(){
     on_actionView_Hidden_Files_triggered(); //make sure to update the models too
   ui->actionShow_Thumbnails->setChecked( settings->value("showthumbnails",true).toBool());
     on_actionShow_Thumbnails_triggered(); //make sure to update models too
+    //ui->actionView_showDirTreePane->setChecked( settings->value("showdirtree", false).toBool());
+    //on_actionView_showDirTreePane_triggered(); //make sure to update the models too
+
   //ui->actionShow_Action_Buttons->setChecked(settings->value("showactions", true).toBool() );
     //on_actionShow_Action_Buttons_triggered(); //make sure to update the UI
   //ui->actionShow_Thumbnails->setChecked( settings->value("showthumbnails", true).toBool() );
@@ -289,7 +306,7 @@ void MainUI::loadSettings(){
   //bool usetabs = (settings->value("groupmode","tabs").toString()=="tabs");
   //if(usetabs){ radio_view_tabs->setChecked(true); }
  // else{ radio_view_cols->setChecked(true); }
-  
+
 }
 
 void MainUI::RebuildBookmarksMenu(){
@@ -344,7 +361,7 @@ void MainUI::RebuildDeviceMenu(){
       //Add filesystem type to the label
       label = QString(tr("%1 (Type: %2)")).arg(label, fs);
     }
-    QAction *act = new QAction(label,this);          
+    QAction *act = new QAction(label,this);
         act->setWhatsThis(path); //full path to mountpoint
 	act->setToolTip( QString(tr("Filesystem: %1")).arg( devs[i].section("::::",1,1) ) );
 	//Now set the appropriate icon
@@ -365,7 +382,7 @@ DirWidget* MainUI::FindActiveBrowser(){
   //Get the current tab ID to start with
   QString cur = tabBar->tabWhatsThis(tabBar->currentIndex());
   //if(cur.startsWith("#")){ cur.clear(); } //multimedia/player tab open
-  
+
   if(DWLIST.length()==1){
     //Only 1 browser open - use it
     curB = DWLIST[0];
@@ -382,7 +399,6 @@ DirWidget* MainUI::FindActiveBrowser(){
       for(int i=0; i<DWLIST.length(); i++){
         if(DWLIST[i]->isAncestorOf(focus)){ curB = DWLIST[i]; break; } //This browser has focus
       }
-	    
     }else{
       //Non-Browser in focus - use the fallback below
     }
@@ -399,7 +415,7 @@ void MainUI::DisplayStatusBar(QString msg){
 	//qDebug() << "message to show in the status bar:" << msg;
 	ui->statusbar->showMessage(msg);
 }
-	
+
 //---------------------
 //Menu Actions
 //---------------------
@@ -431,36 +447,6 @@ void MainUI::on_actionClose_triggered(){
   this->close();
 }
 
-/*void MainUI::on_actionRename_triggered(){
-  DirWidget *dir = FindActiveBrowser();
-  if(DEBUG){ qDebug() << "Rename Shortcut Pressed:" << dir << dir->currentDir(); }
-  if(dir!=0){ QTimer::singleShot(0, dir, SLOT(renameFiles()) ); }
-}
-
-void MainUI::on_actionCut_Selection_triggered(){
-  DirWidget *dir = FindActiveBrowser();
-  if(DEBUG){ qDebug() << "Cut Shortcut Pressed:" << dir << dir->currentDir(); }
-  if(dir!=0){ QTimer::singleShot(0, dir, SLOT(cutFiles()) );	 }
-}
-
-void MainUI::on_actionCopy_Selection_triggered(){
-  DirWidget *dir = FindActiveBrowser();
-  if(DEBUG){ qDebug() << "Copy Shortcut Pressed:" << dir << dir->currentDir(); }
-  if(dir!=0){ QTimer::singleShot(0, dir, SLOT(TryCopySelection()) ); }
-}
-
-void MainUI::on_actionPaste_triggered(){
-  DirWidget *dir = FindActiveBrowser();
-  if(DEBUG){ qDebug() << "Paste Shortcut Pressed:" << dir << dir->currentDir(); }
-  if(dir!=0){ QTimer::singleShot(0, dir, SLOT(TryPasteSelection()) ); }
-}
-
-void MainUI::on_actionDelete_Selection_triggered(){
-  DirWidget *dir = FindActiveBrowser();
-  if(DEBUG){ qDebug() << "Delete Shortcut Pressed:" << dir << dir->currentDir(); }
-  if(dir!=0){ QTimer::singleShot(0, dir, SLOT(TryDeleteSelection()) ); }
-}*/
-
 void MainUI::on_actionRefresh_triggered(){
   DirWidget *cur = FindActiveBrowser();
   if(cur!=0){ cur->refresh(); }
@@ -476,11 +462,14 @@ void MainUI::on_actionView_Hidden_Files_triggered(){
 
 }
 
-/*void MainUI::on_actionShow_Action_Buttons_triggered(){
-  bool show = ui->actionShow_Action_Buttons->isChecked();
-  settings->setValue("showactions", show);
-  //for(int i=0; i<DWLIST.length(); i++){ DWLIST[i]->setShowSidebar(show); }
-}*/
+void MainUI::treeWidgetWidthChanged(float percent){
+  //NOTE: Percent needs to be between 0-75
+  if(percent > 75){ percent = 75; }
+  settings->setValue("dirTree_width", percent);
+  //Re-load the current browsers
+  for(int i=0; i<DWLIST.length(); i++){ DWLIST[i]->adjustTreeWidget(percent); }
+}
+
 
 void MainUI::on_actionShow_Thumbnails_triggered(){
   //Now save this setting for later
@@ -500,7 +489,7 @@ void MainUI::goToBookmark(QAction *act){
   }else{
     //Find the current directory
     DirWidget *dir = FindActiveBrowser();
-    if(dir!=0){ 
+    if(dir!=0){
       dir->ChangeDir(act->whatsThis());
       return;
     }
@@ -514,7 +503,7 @@ void MainUI::goToDevice(QAction *act){
     RebuildDeviceMenu();
   }else{
     DirWidget *dir = FindActiveBrowser();
-    if(dir!=0){ 
+    if(dir!=0){
       dir->ChangeDir(act->whatsThis());
       return;
     }
@@ -533,14 +522,14 @@ void MainUI::viewModeChanged(bool active){
   for(int i=0; i<DWLIST.length(); i++){
     DWLIST[i]->setShowDetails(showDetails);
   }
-	
+
 }
 
 /*void MainUI::groupModeChanged(bool active){
   if(!active){ return; } //on every change, all radio buttons will call this function - only run this once though
   //bool usetabs = radio_view_tabs->isChecked();
- //if(usetabs){ 
-    //settings->setValue("groupmode","tabs"); 
+ //if(usetabs){
+    //settings->setValue("groupmode","tabs");
     //Now clean up all the tabs (remove the generic one and add the specific ones)
     for(int i=0; i<tabBar->count(); i++){
       //Remove all the browser tabs
@@ -588,7 +577,7 @@ void MainUI::on_actionSmaller_Icons_triggered(){
   if(size <= 16){ return; }
   size -= 16;
   for(int i=0; i<DWLIST.length(); i++){ DWLIST[i]->setThumbnailSize(size); }
-  settings->setValue("iconsize", size);	
+  settings->setValue("iconsize", size);
 }
 
 void MainUI::CreateBookMark(){
@@ -644,13 +633,13 @@ void MainUI::tabChanged(int tab){
     ui->stackedWidget->setCurrentWidget(ui->page_browser);
     //if(radio_view_tabs->isChecked()){
       for(int i=0; i<DWLIST.length(); i++){
-	 DWLIST[i]->setVisible(DWLIST[i]->id()==info);     
+	 DWLIST[i]->setVisible(DWLIST[i]->id()==info);
       }
     /*}else{
       //For columns, all widgets need to be visible
       for(int i=0; i<DWLIST.length(); i++){
-	 DWLIST[i]->setVisible(true);     
-      }	    
+	 DWLIST[i]->setVisible(true);
+      }
     }*/
   }
   tabBar->setVisible( tabBar->count() > 1 );
@@ -662,7 +651,7 @@ void MainUI::tabClosed(int tab){
   QString info = tabBar->tabWhatsThis(tab);
   if(info=="browser"){ return; }
   //qDebug() << "Tab Closed:" << info;
-   if(!info.startsWith("#")){ 
+   if(!info.startsWith("#")){
     for(int i=0; i<DWLIST.length(); i++){
       if(info == DWLIST[i]->id()){
 	 DWLIST[i]->cleanup();
@@ -689,7 +678,7 @@ void MainUI::prevTab(){
 void MainUI::nextTab(){
   int cur = tabBar->currentIndex();
   if(cur == (tabBar->count()-1) ){ tabBar->setCurrentIndex(0); }
-  else{ tabBar->setCurrentIndex( cur+1 ); }	
+  else{ tabBar->setCurrentIndex( cur+1 ); }
 }
 
 
@@ -741,7 +730,7 @@ void MainUI::OpenImages(LFileInfoList list){
 }
 
 void MainUI::OpenTerminal(QString dirpath){
-  //we use the application defined as the default terminal 
+  //we use the application defined as the default terminal
   //QSettings sessionsettings( QSettings::UserScope, "LuminaDE","sessionsettings", this);
   //xterm remains the default
   QString defTerminal = LXDG::findDefaultAppForMime("application/terminal"); //sessionsettings.value("default-terminal", "xterm").toString();
@@ -803,19 +792,19 @@ void MainUI::PasteFiles(QString dir, QStringList raw){
   }
   if(!dir.endsWith("/")){ dir.append("/"); }
   for(int i=0; i<raw.length(); i++){
-    if(raw[i].startsWith("cut::::")){ 
+    if(raw[i].startsWith("cut::::")){
 	cut << raw[i].section("::::",1,50);
 	newcut << dir+raw[i].section("::::",1,50).section("/",-1);
     }
-    else if(raw[i].startsWith("copy::::")){ 
-	copy << raw[i].section("::::",1,50); 
+    else if(raw[i].startsWith("copy::::")){
+	copy << raw[i].section("::::",1,50);
 	newcopy<< dir+raw[i].section("::::",1,50).section("/",-1);
     }
   }
   //bool errs = false;
   //Perform the copy/move operations
   //worker->pauseData = true; //pause any info requests
-  if(!copy.isEmpty()){ 
+  if(!copy.isEmpty()){
     qDebug() << "Paste Copy:" << copy << "->" << newcopy;
     TRAY->StartOperation( TrayUI::COPY, copy, newcopy);
     /*FODialog dlg(this);
@@ -837,7 +826,7 @@ void MainUI::PasteFiles(QString dir, QStringList raw){
   //Modify the clipboard appropriately
   if(!cut.isEmpty()){
     //Now clear the clipboard since those old file locations are now invalid
-    QApplication::clipboard()->clear(); 
+    QApplication::clipboard()->clear();
     if(!copy.isEmpty()){
       //There were also files copied: save those files back into the clipboard
        QMimeData *dat = new QMimeData;
@@ -898,19 +887,19 @@ void MainUI::RenameFiles(QStringList list){
 }
 
 void MainUI::RemoveFiles(QStringList list){
-  if(list.isEmpty()){ return; } //nothing selected	
+  if(list.isEmpty()){ return; } //nothing selected
   qDebug() << "Remove Files:" << list;
   QStringList paths, names;
   for(int i=0; i<list.length(); i++){
      paths << list[i];
      names << list[i].section("/",-1);
    }
-  
+
   //Verify permanent removal of file/dir
   QMessageBox dlgQ(QMessageBox::Question, tr("Verify Removal"), tr("WARNING: This will permanently delete the file(s) from the system!")+"\n"+tr("Are you sure you want to continue?"), QMessageBox::Yes | QMessageBox::No, this);
     dlgQ.setDetailedText(tr("Items to be removed:")+"\n\n"+names.join("\n"));
   dlgQ.exec();
-  if(dlgQ.result() != QMessageBox::Yes){ return; } //cancelled   
+  if(dlgQ.result() != QMessageBox::Yes){ return; } //cancelled
 
   //Now remove the file/dir
   qDebug() << " - Delete: "<<paths;
@@ -964,11 +953,11 @@ void MainUI::TrayJobsFinished(){
 void MainUI::closeEvent(QCloseEvent *ev){
   //See if the tray is active or not first
   if(TRAY!=0){
-    if(TRAY->isVisible() && !waitingToClose){ 
-      this->hide(); 
-      ev->ignore(); 
+    if(TRAY->isVisible() && !waitingToClose){
+      this->hide();
+      ev->ignore();
       waitingToClose = true;
-      return; 
+      return;
     }
   }
   QMainWindow::closeEvent(ev); //continue normal close routine

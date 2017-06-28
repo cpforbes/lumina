@@ -14,6 +14,7 @@
 #include "NativeWindow.h"
 #include <QDateTime>
 #include <QTimer>
+#include <QDebug>
 
 class NativeWindowSystem : public QObject{
 	Q_OBJECT
@@ -23,20 +24,22 @@ private:
 
 	//Simplifications to find an already-created window object
 	NativeWindow* findWindow(WId id){
-	  for(int i=0; i<NWindows.length(); i++){ 
-	    if(id==NWindows[i]->id()){ return NWindows[i]; } 
+	  qDebug() << "Find Window:" << id;
+	  for(int i=0; i<NWindows.length(); i++){
+             qDebug() << "  -- Check Window:" << NWindows[i]->id();
+	    if(NWindows[i]->isRelatedTo(id)){ qDebug() << "  -- Got Match!"; return NWindows[i]; }
 	  }
 	  return 0;
 	}
 
 	NativeWindow* findTrayWindow(WId id){
-	  for(int i=0; i<TWindows.length(); i++){ 
-	    if(id==TWindows[i]->id()){ return TWindows[i]; } 
+	  for(int i=0; i<TWindows.length(); i++){
+	    if(TWindows[i]->isRelatedTo(id)){ return TWindows[i]; }
 	  }
 	  return 0;
 	}
 
-	//Now define a simple private_objects class so that each implementation 
+	//Now define a simple private_objects class so that each implementation
 	//  has a storage container for defining/placing private objects as needed
 	class p_objects;
 	p_objects* obj;
@@ -58,9 +61,12 @@ private:
 	  }
 	}
 
-	// Since some properties may be easier to update in bulk 
+	// Since some properties may be easier to update in bulk
 	//   let the native system interaction do them in whatever logical groups are best
 	void UpdateWindowProperties(NativeWindow* win, QList< NativeWindow::Property > props);
+
+	//Generic private variables
+	bool screenLocked;
 
 public:
 	enum Property{ None, CurrentWorkspace, Workspaces, VirtualRoots, WorkAreas };
@@ -84,11 +90,25 @@ public:
 public slots:
 	//These are the slots which are typically only used by the desktop system itself or the NativeWindowEventFilter
 
-	//RootWindow interactions
+	//This is called by the lock screen to keep the NWS aware of the current status
+	// it is **NOT** the function to call for the user to actually lock the session (that is in the screensaver/lockscreen class)
+	 void ScreenLockChanged(bool lock){
+	  screenLocked = lock;
+	}
+
+	//Root Window property registrations
 	void RegisterVirtualRoot(WId);
+	void setRoot_supportedActions();
+	void setRoot_numberOfWorkspaces(QStringList names);
+	void setRoot_currentWorkspace(int);
+	void setRoot_clientList(QList<WId>, bool stackorder = false);
+	void setRoot_desktopGeometry(QRect);
+	void setRoot_desktopWorkarea(QList<QRect>);
+	void setRoot_activeWindow(WId);
+
+	//  - Workspaces
+	int currentWorkspace();
 	//void GoToWorkspace(int);
-	//void RegisterWorkspaces(QStringList); //Names of workspaces, in ascending order
-	//void RegisterKnownInteractions();
 
 
 	//NativeWindowEventFilter interactions
@@ -98,10 +118,10 @@ public slots:
 	void WindowPropertyChanged(WId, NativeWindow::Property); //will rescan the window and update the object as needed
 	void GotPong(WId);
 
-/*	void NewKeyPress(int keycode, WId win = 0);
+	void NewKeyPress(int keycode, WId win = 0);
 	void NewKeyRelease(int keycode, WId win = 0);
 	void NewMousePress(int buttoncode, WId win = 0);
-	void NewMouseRelease(int buttoncode, WId win = 0);*/
+	void NewMouseRelease(int buttoncode, WId win = 0);
 	void CheckDamageID(WId);
 
 private slots:
@@ -115,10 +135,10 @@ signals:
 	void NewWindowAvailable(NativeWindow*);
 	void NewTrayWindowAvailable(NativeWindow*);
 	void NewInputEvent(); //a mouse or keypress was detected (lock-state independent);
-	void KeyPressDetected(Qt::Key, WId); //only emitted if lockstate = false
-	void KeyReleaseDetected(Qt::Key, WId); //only emitted if lockstate = false
-	void MousePressDetected(Qt::MouseButton, WId); //only emitted if lockstate = false
-	void MouseReleaseDetected(Qt::MouseButton, WId); //only emitted if lockstate = false
+	void KeyPressDetected(WId, int); //only emitted if lockstate = false
+	void KeyReleaseDetected(WId, int); //only emitted if lockstate = false
+	void MousePressDetected(WId, NativeWindowSystem::MouseButton); //only emitted if lockstate = false
+	void MouseReleaseDetected(WId, NativeWindowSystem::MouseButton); //only emitted if lockstate = false
 
 };
 

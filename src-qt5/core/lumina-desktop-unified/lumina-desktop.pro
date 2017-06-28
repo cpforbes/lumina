@@ -12,12 +12,13 @@ target.path = $${L_BINDIR}
 include(../libLumina/ResizeMenu.pri)
 include(../libLumina/LDesktopUtils.pri) #includes LUtils and LOS
 include(../libLumina/LuminaXDG.pri)
-include(../libLumina/LuminaX11.pri)
+#include(../libLumina/LuminaX11.pri)
 include(../libLumina/LuminaSingleApplication.pri)
 include(../libLumina/LuminaThemes.pri)
 include(../libLumina/DesktopSettings.pri)
 include(../libLumina/RootWindow.pri)
 include(../libLumina/ExternalProcess.pri)
+include(../libLumina/NativeWindow.pri)
 
 #include  all the main individual source groups
 include(src-screensaver/screensaver.pri)

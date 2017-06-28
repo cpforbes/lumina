@@ -58,15 +58,21 @@ public:
 
 	//Functions for setting up these objects as needed
 	bool init_ATOMS(){
+	  xcb_intern_atom_cookie_t *cookie = xcb_ewmh_init_atoms(QX11Info::connection(), &EWMH);
+	   if(!xcb_ewmh_init_atoms_replies(&EWMH, cookie, NULL) ){
+	     qDebug() << "Error with XCB atom initializations";
+	     return false;
+	   }
+
 	  QStringList atoms;
-	    atoms << "WM_TAKE_FOCUS" << "WM_DELETE_WINDOW" << "WM_PROTOCOLS" 
-		<< "WM_CHANGE_STATE" << "_NET_SYSTEM_TRAY_OPCODE" << "_NET_SYSTEM_TRAY_ORIENTATION" 
+	    atoms << "WM_TAKE_FOCUS" << "WM_DELETE_WINDOW" << "WM_PROTOCOLS"
+		<< "WM_CHANGE_STATE" << "_NET_SYSTEM_TRAY_OPCODE" << "_NET_SYSTEM_TRAY_ORIENTATION"
 		<< "_NET_SYSTEM_TRAY_VISUAL" << QString("_NET_SYSTEM_TRAY_S%1").arg(QString::number(QX11Info::appScreen()));
 	    //Create all the requests for the atoms
 	    QList<xcb_intern_atom_reply_t*> reply;
 	    for(int i=0; i<atoms.length(); i++){
 	      reply << xcb_intern_atom_reply(QX11Info::connection(), \
-				xcb_intern_atom(QX11Info::connection(), 0, atoms[i].length(), atoms[i].toLocal8Bit()), NULL); 
+				xcb_intern_atom(QX11Info::connection(), 0, atoms[i].length(), atoms[i].toLocal8Bit()), NULL);
 	    }
 	    //Now evaluate all the requests and save the atoms
 	    for(int i=0; i<reply.length(); i++){ //NOTE: this will always be the same length as the "atoms" list
@@ -83,7 +89,7 @@ public:
 
 	bool register_wm(){
 	  uint32_t value_list[1] = {ROOT_WIN_EVENT_MASK};
-	  xcb_generic_error_t *status = xcb_request_check( QX11Info::connection(), xcb_change_window_attributes_checked(QX11Info::connection(), root_window, XCB_CW_EVENT_MASK, value_list)); 
+	  xcb_generic_error_t *status = xcb_request_check( QX11Info::connection(), xcb_change_window_attributes_checked(QX11Info::connection(), root_window, XCB_CW_EVENT_MASK, value_list));
 	  if(status!=0){ return false; }
 	  uint32_t params[] = {1};
 	  wm_window = xcb_generate_id(QX11Info::connection()); //need a new ID
@@ -97,7 +103,7 @@ public:
 	  //Also set this property on the child window (pointing to itself)
 	  xcb_ewmh_set_supporting_wm_check(&EWMH, wm_window, wm_window);
 	  //Now also setup the root event mask on the wm_window
-	  status = xcb_request_check( QX11Info::connection(), xcb_change_window_attributes_checked(QX11Info::connection(), wm_window, XCB_CW_EVENT_MASK, value_list)); 
+	  status = xcb_request_check( QX11Info::connection(), xcb_change_window_attributes_checked(QX11Info::connection(), wm_window, XCB_CW_EVENT_MASK, value_list));
 	  if(status!=0){ return false; }
 	  return true;
 	}
@@ -144,18 +150,18 @@ public:
 	  xcb_visualtype_t *type = xcb_aux_find_visual_by_attrs(root_screen, XCB_VISUAL_CLASS_TRUE_COLOR, 32);
 	  if(type!=0){
 	    xcb_change_property(QX11Info::connection(), XCB_PROP_MODE_REPLACE, tray_window, \
-		ATOMS.value("_NET_SYSTEM_TRAY_VISUAL"), XCB_ATOM_VISUALID, 32, 1, &type->visual_id);	    
+		ATOMS.value("_NET_SYSTEM_TRAY_VISUAL"), XCB_ATOM_VISUALID, 32, 1, &type->visual_id);
 	  }else{
 	    qWarning() << " - Could not set TrueColor visual for system tray";
 	  }
-  
+
 	  //Finally, send out an X event letting others know that the system tray is up and running
 	   xcb_client_message_event_t event;
 	    event.response_type = XCB_CLIENT_MESSAGE;
 	    event.format = 32;
 	    event.window = root_screen->root;
 	    event.type = EWMH.MANAGER; //MANAGER atom
-	    event.data.data32[0] = XCB_TIME_CURRENT_TIME; //CurrentTime;  
+	    event.data.data32[0] = XCB_TIME_CURRENT_TIME; //CurrentTime;
 	    event.data.data32[1] = _NET_SYSTEM_TRAY_S; //_NET_SYSTEM_TRAY_S atom
 	    event.data.data32[2] = tray_window;
 	    event.data.data32[3] = 0;
@@ -175,6 +181,7 @@ public:
 NativeWindowSystem::NativeWindowSystem() : QObject(){
   obj = 0;
   pingTimer = 0;
+  screenLocked = false;
 }
 
 NativeWindowSystem::~NativeWindowSystem(){
@@ -200,7 +207,12 @@ bool NativeWindowSystem::start(){
     if( !obj->init_ATOMS() ){ return false; }
   } //Done with private object init
   bool ok  = obj->register_wm();
-  if(ok){ ok = obj->start_system_tray(); }
+  if(ok){
+    setRoot_supportedActions();
+    ok = obj->start_system_tray();
+  }else{
+    qWarning() << "Could not register the WM";
+  }
   return ok;
 }
 
@@ -210,6 +222,8 @@ void NativeWindowSystem::stop(){
 
 //Small simplification functions
 Qt::Key NativeWindowSystem::KeycodeToQt(int keycode){
+  qDebug() << "Try to convert keycode to Qt::Key:" << keycode;
+  qDebug() << " - Not implemented yet";
   return Qt::Key_unknown;
 }
 
@@ -255,7 +269,7 @@ void NativeWindowSystem::UpdateWindowProperties(NativeWindow* win, QList< Native
     if(name.isEmpty()){
       //_NET_WM_VISIBLE_NAME
       xcb_get_property_cookie_t cookie = xcb_ewmh_get_wm_visible_name_unchecked(&obj->EWMH, win->id());
-      if(cookie.sequence != 0){ 
+      if(cookie.sequence != 0){
         xcb_ewmh_get_utf8_strings_reply_t data;
         if( 1 == xcb_ewmh_get_wm_visible_name_reply(&obj->EWMH, cookie, &data, NULL) ){
           name = QString::fromUtf8(data.strings, data.strings_len);
@@ -288,7 +302,7 @@ void NativeWindowSystem::UpdateWindowProperties(NativeWindow* win, QList< Native
     if(name.isEmpty()){
       //_NET_WM_VISIBLE_ICON_NAME
       xcb_get_property_cookie_t cookie = xcb_ewmh_get_wm_visible_icon_name_unchecked(&obj->EWMH, win->id());
-      if(cookie.sequence != 0){ 
+      if(cookie.sequence != 0){
         xcb_ewmh_get_utf8_strings_reply_t data;
         if( 1 == xcb_ewmh_get_wm_visible_icon_name_reply(&obj->EWMH, cookie, &data, NULL) ){
           name = QString::fromUtf8(data.strings, data.strings_len);
@@ -337,7 +351,7 @@ void NativeWindowSystem::UpdateWindowProperties(NativeWindow* win, QList< Native
 	    uint* dat = iter.data;
 	    //dat+=2; //remember the first 2 element offset
 	    for(int i=0; i<image.byteCount()/4; ++i, ++dat){
-	      ((uint*)image.bits())[i] = *dat; 
+	      ((uint*)image.bits())[i] = *dat;
 	    }
           icon.addPixmap(QPixmap::fromImage(image)); //layer this pixmap onto the icon
           //Now see if there are any more icons available
@@ -350,7 +364,7 @@ void NativeWindowSystem::UpdateWindowProperties(NativeWindow* win, QList< Native
     win->setProperty(NativeWindow::Icon, icon);
   } //end ICON property
 
-  if(props.contains(NativeWindow::MinSize) || props.contains(NativeWindow::MaxSize) 
+  if(props.contains(NativeWindow::MinSize) || props.contains(NativeWindow::MaxSize)
 	|| props.contains(NativeWindow::Size) || props.contains(NativeWindow::GlobalPos) ){
     //Try the ICCCM "Normal Hints" structure first (newer spec?)
     xcb_get_property_cookie_t cookie = xcb_icccm_get_wm_normal_hints_unchecked(QX11Info::connection(), win->id());
@@ -405,9 +419,110 @@ void NativeWindowSystem::UpdateWindowProperties(NativeWindow* win, QList< Native
 
 
 // === PUBLIC SLOTS ===
-//These are the slots which are only used by the desktop system itself or the NativeWindowEventFilter
-void NativeWindowSystem::RegisterVirtualRoot(WId){
+//These are the slots which are typically only used by the desktop system itself or the NativeEventFilter
+void NativeWindowSystem::RegisterVirtualRoot(WId id){
+  //Convert to XCB array
+  xcb_window_t array[1];
+  array[0] = id;
+  //Set the property
+  xcb_ewmh_set_virtual_roots(&obj->EWMH, QX11Info::appScreen(), 1, array);
+}
 
+void NativeWindowSystem::setRoot_supportedActions(){
+//NET_WM standards (ICCCM implied - no standard way to list those)
+  xcb_atom_t list[] = {obj->EWMH._NET_WM_NAME,
+		obj->EWMH._NET_WM_ICON,
+		obj->EWMH._NET_WM_ICON_NAME,
+		obj->EWMH._NET_WM_DESKTOP,
+		/*_NET_WINDOW_TYPE (and all the various types)*/
+		obj->EWMH._NET_WM_WINDOW_TYPE, obj->EWMH._NET_WM_WINDOW_TYPE_DESKTOP, obj->EWMH._NET_WM_WINDOW_TYPE_DOCK,
+		obj->EWMH._NET_WM_WINDOW_TYPE_TOOLBAR, obj->EWMH._NET_WM_WINDOW_TYPE_MENU, obj->EWMH._NET_WM_WINDOW_TYPE_UTILITY,
+		obj->EWMH._NET_WM_WINDOW_TYPE_SPLASH, obj->EWMH._NET_WM_WINDOW_TYPE_DIALOG, obj->EWMH._NET_WM_WINDOW_TYPE_NORMAL,
+		obj->EWMH._NET_WM_WINDOW_TYPE_DROPDOWN_MENU, obj->EWMH._NET_WM_WINDOW_TYPE_POPUP_MENU, obj->EWMH._NET_WM_WINDOW_TYPE_TOOLTIP,
+		obj->EWMH._NET_WM_WINDOW_TYPE_NOTIFICATION, obj->EWMH._NET_WM_WINDOW_TYPE_COMBO, obj->EWMH._NET_WM_WINDOW_TYPE_DND,
+		};
+  xcb_ewmh_set_supported(&obj->EWMH, QX11Info::appScreen(), 19,list);
+}
+
+void NativeWindowSystem::setRoot_numberOfWorkspaces(QStringList names){
+  if(names.isEmpty()){ names << "one"; }
+  //First set the overall number of workspaces
+  xcb_ewmh_set_number_of_desktops(&obj->EWMH, QX11Info::appScreen(), names.length());
+  //Now set the names for the workspaces
+  //EWMH LIBRARY BROKEN  - appears to be a mismatch in the function header (looking for a single char array, instead of a list of char arrays)
+  // Ken Moore - 6/27/17
+  /*
+  char *array[ names.length() ];
+  for(int i=0; i<names.length(); i++){array[i] = names[i].toUtf8().data(); } //Convert to an array of char arrays
+  xcb_ewmh_set_desktop_names(&obj->EWMH, QX11Info::appScreen(), names.length(), array);
+  */
+}
+
+void NativeWindowSystem::setRoot_currentWorkspace(int num){
+  xcb_ewmh_set_current_desktop(&obj->EWMH, QX11Info::appScreen(), num);
+}
+
+void NativeWindowSystem::setRoot_clientList(QList<WId> list, bool stackorder){
+  //convert the QList into a generic array
+  xcb_window_t array[list.length()];
+  for(int i=0; i<list.length(); i++){ array[i] = list[i]; }
+  if(stackorder){
+    xcb_ewmh_set_client_list_stacking(&obj->EWMH, QX11Info::appScreen(), list.length(), array);
+  }else{
+    xcb_ewmh_set_client_list(&obj->EWMH, QX11Info::appScreen(), list.length(), array);
+  }
+}
+
+void NativeWindowSystem::setRoot_desktopGeometry(QRect geom){
+  //This one is a combo function
+  // This will set the "DESKTOP_VIEWPORT" property (point)
+  //    as well as the "DESKTOP_GEOMETRY" property (size)
+  //Turn the QList into xcb_ewmh_coordinates_t*
+  xcb_ewmh_coordinates_t array[1];
+  array[0].x=geom.x(); array[0].y=geom.y();
+  //Now set the property
+  xcb_ewmh_set_desktop_viewport(&obj->EWMH, QX11Info::appScreen(), 1, array);
+  xcb_ewmh_set_desktop_geometry(&obj->EWMH, QX11Info::appScreen(), geom.width(), geom.height());
+}
+
+void NativeWindowSystem::setRoot_desktopWorkarea(QList<QRect> list){
+  //Convert to the XCB/EWMH data structures
+  xcb_ewmh_geometry_t array[list.length()];
+  for(int i=0; i<list.length(); i++){
+    array[i].x = list[i].x(); array[i].y = list[i].y();
+    array[i].width = list[i].width(); array[i].height = list[i].height();
+  }
+  //Now set the property
+  xcb_ewmh_set_workarea(&obj->EWMH, QX11Info::appScreen(), list.length(), array);
+}
+
+void NativeWindowSystem::setRoot_activeWindow(WId win){
+  xcb_ewmh_set_active_window(&obj->EWMH, QX11Info::appScreen(), win);
+  //Also send the active window a message to take input focus
+  //Send the window a WM_TAKE_FOCUS message
+    xcb_client_message_event_t event;
+    event.response_type = XCB_CLIENT_MESSAGE;
+    event.format = 32;
+    event.window = win;
+    event.type = obj->ATOMS["WM_PROTOCOLS"];
+    event.data.data32[0] = obj->ATOMS["WM_TAKE_FOCUS"];
+    event.data.data32[1] = XCB_TIME_CURRENT_TIME; //CurrentTime;
+    event.data.data32[2] = 0;
+    event.data.data32[3] = 0;
+    event.data.data32[4] = 0;
+
+    xcb_send_event(QX11Info::connection(), 0, win,  XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *) &event);
+    xcb_flush(QX11Info::connection());
+}
+
+int NativeWindowSystem::currentWorkspace(){
+  xcb_get_property_cookie_t cookie = xcb_ewmh_get_current_desktop_unchecked(&obj->EWMH, QX11Info::appScreen());
+  uint32_t num = 0;
+  if(1==xcb_ewmh_get_current_desktop_reply(&obj->EWMH, cookie, &num, NULL) ){
+    return num;
+  }else{
+    return 0;
+  }
 }
 
 //NativeWindowEventFilter interactions
@@ -429,7 +544,7 @@ void NativeWindowSystem::NewWindowDetected(WId id){
                           XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |	\
                           XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |	\
                           XCB_EVENT_MASK_ENTER_WINDOW)
-	
+
   uint32_t value_list[1] = {NORMAL_WIN_EVENT_MASK};
   xcb_change_window_attributes(QX11Info::connection(), id, XCB_CW_EVENT_MASK, value_list);
   //Now go ahead and create/populate the container for this window
@@ -457,7 +572,7 @@ void NativeWindowSystem::NewTrayWindowDetected(WId id){
                           XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |	\
                           XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |	\
                           XCB_EVENT_MASK_ENTER_WINDOW)
-	
+
   uint32_t value_list[1] = {TRAY_WIN_EVENT_MASK};
   xcb_change_window_attributes(QX11Info::connection(), id, XCB_CW_EVENT_MASK, value_list);
   //Now go ahead and create/populate the container for this window
@@ -469,6 +584,7 @@ void NativeWindowSystem::NewTrayWindowDetected(WId id){
 
 void NativeWindowSystem::WindowCloseDetected(WId id){
   NativeWindow *win = findWindow(id);
+  qDebug() << "Got Window Closed" << id << win;
   if(win!=0){
     NWindows.removeAll(win);
     win->emit WindowClosed(id);
@@ -478,13 +594,13 @@ void NativeWindowSystem::WindowCloseDetected(WId id){
     if(win!=0){
       TWindows.removeAll(win);
       win->emit WindowClosed(id);
-      win->deleteLater();      
+      win->deleteLater();
     }
   }
 }
 
 void NativeWindowSystem::WindowPropertyChanged(WId id, NativeWindow::Property prop){
-  //NOTE: This is triggered by the NativeWindowEventFilter - not by changes to the NativeWindow objects themselves
+  //NOTE: This is triggered by the NativeEventFilter - not by changes to the NativeWindow objects themselves
   NativeWindow *win = findWindow(id);
   if(win==0){ win = findTrayWindow(id); }
   if(win!=0){
@@ -499,54 +615,29 @@ void NativeWindowSystem::GotPong(WId id){
   if(waitingForPong.isEmpty() && pingTimer!=0){ pingTimer->stop(); }
 }
 
-/*void NativeWindowSystem::NewKeyPress(int keycode, WId win){
+void NativeWindowSystem::NewKeyPress(int keycode, WId win){
   emit NewInputEvent();
+  if(screenLocked){ return; }
+  emit KeyPressDetected(win, keycode);
 }
 
 void NativeWindowSystem::NewKeyRelease(int keycode, WId win){
   emit NewInputEvent();
-  //Convert the native button code into a Qt keycode
-  //Qt::Key key = keycode; //TODO
-  //emit KeyReleaseDetected( key, win);
+  if(screenLocked){ return; }
+  emit KeyReleaseDetected(win, keycode);
 }
 
 void NativeWindowSystem::NewMousePress(int buttoncode, WId win){
   emit NewInputEvent();
-  //Convert the native button code into a Qt mouse button code
-  Qt::MouseButton button;
-  switch(buttoncode){
-	case 1: 
-	  button = Qt::LeftButton ; break;
-	case 2: 
-	  button = Qt::MiddleButton ; break;
-	case 3: 
-	  button = Qt::RightButton ; break;
-	case 4: 
-	  button = Qt::LeftButton ; break;
-	default:
-	  return; //Unhandled button
-  }
-  emit MousePressDetected(button, win);
+  if(screenLocked){ return; }
+  emit MousePressDetected(win, MouseToQt(buttoncode));
 }
 
 void NativeWindowSystem::NewMouseRelease(int buttoncode, WId win){
   emit NewInputEvent();
-  //Convert the native button code into a Qt mouse button code
-  Qt::MouseButton button;
-  switch(buttoncode){
-	case 1: 
-	  button = Qt::LeftButton ; break;
-	case 2: 
-	  button = Qt::MiddleButton ; break;
-	case 3: 
-	  button = Qt::RightButton ; break;
-	case 4: 
-	  button = Qt::LeftButton ; break;
-	default:
-	  return; //Unhandled button
-  }
-  emit MouseReleaseDetected(button, win);
-}*/
+  if(screenLocked){ return; }
+  emit MouseReleaseDetected(win, MouseToQt(buttoncode));
+}
 
 void NativeWindowSystem::CheckDamageID(WId win){
   NativeWindow *WIN = findTrayWindow(win);
@@ -564,7 +655,9 @@ void NativeWindowSystem::RequestPropertiesChange(WId win, QList<NativeWindow::Pr
   if(WIN==0){ istraywin = true; WIN = findTrayWindow(win); }
   if(WIN==0){ return; } //invalid window ID - no longer available
   //Now make any changes as needed
-  
+  // TODO
+  qDebug() << "Request Properties Changed:" << props << vals;
+  qDebug() << " - Not implemented yet";
 }
 
 void NativeWindowSystem::RequestClose(WId win){
