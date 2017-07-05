@@ -9,10 +9,10 @@
 %if %{defined git_build}
 %global commit0 %{git_build}
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
-%define release_version 1.2.2
+%define release_version 1.3.1
 %global relver %{rel}.%{shortcommit0}
 %else
-%define release_version 1.2.0
+%define release_version 1.3.0
 %global relver %{rel}
 %endif
 
@@ -87,15 +87,15 @@ Suggests:           lumina-calculator = %{version}-%{release}
 Suggests:           lumina-archiver = %{version}-%{release}
 %endif
 
-Provides:       lumina-info = 1.2.1
+Provides:       lumina-info
 Obsoletes:      lumina-info <= 1.2.1
-Provides:       lumina-open = 1.2.1
+Provides:       lumina-open
 Obsoletes:      lumina-open <= 1.2.1
-Provides:       lumina-desktop-data = 1.2.1
+Provides:       lumina-desktop-data
 Obsoletes:      lumina-desktop-data <= 1.2.1
-Provides:       lumina-desktop-filesystem = 1.2.1
+Provides:       lumina-desktop-filesystem
 Obsoletes:      lumina-desktop-filesystem <= 1.2.1
-Provides:       lumina-desktop-wallpapers = 1.2.1
+Provides:       lumina-desktop-wallpapers
 Obsoletes:      lumina-desktop-wallpapers <= 1.2.1
 
 %description
@@ -111,11 +111,11 @@ user's productivity.
 %package -n lumina-coreutils
 Summary:        Core utilities for the Lumina Desktop.
 Requires:       %{name} = %{version}-%{release}
-Provides:       lumina-config = 1.2.1
+Provides:       lumina-config
 Obsoletes:      lumina-config <= 1.2.1
-Provides:       lumina-search = 1.2.1
+Provides:       lumina-search
 Obsoletes:      lumina-search <= 1.2.1
-Provides:       lumina-xconfig = 1.2.1
+Provides:       lumina-xconfig
 Obsoletes:      lumina-xconfig <= 1.2.1
 
 %description -n lumina-coreutils
@@ -367,6 +367,8 @@ cp %{buildroot}%{_datadir}/lumina-desktop/luminaDesktop.conf %{buildroot}%{_sysc
 %{_bindir}/lumina-textedit
 %{_bindir}/lte
 %{_datadir}/lumina-desktop/i18n/l-te*.qm
+%{_datadir}/lumina-desktop/syntax_rules/README.md
+%{_datadir}/lumina-desktop/syntax_rules/*.syntax
 %{_datadir}/applications/lumina-textedit.desktop
 
 %files -n lumina-xdg-entry
