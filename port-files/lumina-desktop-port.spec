@@ -12,7 +12,7 @@
 %define release_version 1.3.1
 %global relver %{rel}.%{shortcommit0}
 %else
-%define release_version 1.3.0
+%define release_version 1.3.0-p1
 %global relver %{rel}
 %endif
 
